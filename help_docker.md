@@ -7,9 +7,9 @@
 ### Linux (π.χ. Ubuntu)
 Ανοίξτε τερματικό και εκτελέστε:
 ```bash
-sudo apt update
-sudo apt install docker.io docker-compose -y
-sudo systemctl enable --now docker
+    sudo apt update
+    sudo apt install docker.io docker-compose -y
+    sudo systemctl enable --now docker
 ```
 
 ### Windows
