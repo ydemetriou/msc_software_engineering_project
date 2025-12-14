@@ -1,3 +1,21 @@
+# Ξεκινώντας με το Git
+
+## 1. Δημιουργία SSH Key (αν δεν έχετε ήδη)
+Ακολουθήστε τον επίσημο οδηγό της GitHub για να δημιουργήσετε νέο SSH key:
+[Δημιουργία SSH Key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+
+## 2. Προσθήκη του SSH Key στο GitHub
+Οδηγίες για να προσθέσετε το SSH key στον λογαριασμό σας στο GitHub:
+[Προσθήκη SSH Key στο GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
+
+## 3. Κλωνοποίηση του repository με SSH
+Χρησιμοποιήστε το παρακάτω command για να κάνετε clone το project:
+```bash
+  git clone git@github.com:ydemetriou/msc_software_engineering_project.git
+```
+
+---
+
 # Βασικές Εντολές Git για το Project
 
 Ακολουθούν οι κύριες εντολές git που θα χρειαστείτε για τη διαχείριση του κώδικα του project:
@@ -40,4 +58,3 @@
 - Πριν ξεκινήσετε νέα εργασία, βεβαιωθείτε ότι το branch σας είναι ενημερωμένο με το main (`git pull origin main`).
 - Κάνετε συχνά commit και push για να μην χάσετε τη δουλειά σας.
 - Χρησιμοποιείτε περιγραφικά ονόματα για τα branches σας.
-
