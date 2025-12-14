@@ -1,0 +1,4 @@
+CREATE TABLE recipes (
+     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+     title VARCHAR(255) NOT NULL,
+);
