@@ -1,3 +1,13 @@
+# Οδηγία για αρχείο περιβάλλοντος (.env)
+
+Για να λειτουργήσει σωστά το project, πρέπει να αντιγράψετε το αρχείο `.env.example` σε `.env` πριν εκκινήσετε τα containers:
+
+```bash
+cp .env.example .env
+```
+
+Στη συνέχεια, μπορείτε να προσαρμόσετε τις μεταβλητές περιβάλλοντος στο `.env` ανάλογα με τις ανάγκες σας.
+
 # Docker Commands Cheat Sheet for Cooking Recipe Project
 
 Αυτό το αρχείο περιέχει τις βασικές εντολές για να τρέξει το project με Docker για πρώτη φορά, καθώς και για να έχεις πρόσβαση στον MySQL και στον Spring Boot container.
@@ -40,6 +50,21 @@
 #### Συνδέεται απευθείας στον MySQL container που τρέχει ήδη.
 
 Password: root
+
+## Πρόσβαση στην εφαρμογή Spring Boot
+
+Η εφαρμογή είναι διαθέσιμη στο:
+http://localhost:8080
+(Το port ορίζεται στο αρχείο `.env` με τη μεταβλητή SPRING_SERVER_PORT)
+
+## Πρόσβαση στο phpMyAdmin
+
+Το phpMyAdmin είναι διαθέσιμο στο:
+http://localhost:8082
+
+Χρησιμοποιήστε τα ίδια στοιχεία σύνδεσης με τη βάση δεδομένων MySQL (user: root, password: root).
+
+Το phpMyAdmin προστέθηκε για εύκολη διαχείριση της βάσης δεδομένων μέσω web περιβάλλοντος.
 
 ## Πρόσβαση στον Spring Boot container
 Δες τα logs της εφαρμογής
