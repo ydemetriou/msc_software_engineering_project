@@ -1,7 +1,7 @@
-package com.cooking_recipe_project.repository;
+package com.cooking.recipe.project.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.cooking_recipe_project.entity.TestTable;
+import com.cooking.recipe.project.entity.TestTable;
 
 public interface TestTableRepository extends JpaRepository<TestTable, Long> {
 }
