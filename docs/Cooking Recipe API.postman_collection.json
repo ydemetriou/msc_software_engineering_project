@@ -1,0 +1,263 @@
+{
+	"info": {
+		"_postman_id": "f14a3268-e54d-4272-9e51-934701508cf1",
+		"name": "Cooking Recipe API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26016389",
+		"_collection_link": "https://sdsd33-4217.postman.co/workspace/FAI~45766377-cd49-4063-8986-732d945c4baf/collection/26016389-f14a3268-e54d-4272-9e51-934701508cf1?action=share&source=collection_link&creator=26016389"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8081/api/recipes",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/recipes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"recipes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8081/api/recipes/1",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/recipes/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"recipes",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8081/api/recipes",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Spaghetti Carbonara\",\r\n  \"category\": \"Pasta\",\r\n  \"difficulty\": \"Medium\",\r\n  \"totalTime\": 25,\r\n  \"photos\": [\"carbonara_main.jpg\"],\r\n  \"ingredients\": [\r\n    {\"name\": \"Spaghetti\", \"quantity\": 500, \"unit\": \"grams\"},\r\n    {\"name\": \"Eggs\", \"quantity\": 3, \"unit\": \"pcs\"},\r\n    {\"name\": \"Pancetta\", \"quantity\": 150, \"unit\": \"grams\"},\r\n    {\"name\": \"Parmesan\", \"quantity\": 100, \"unit\": \"grams\"}\r\n  ],\r\n  \"steps\": [\r\n    {\"stepOrder\": 1, \"title\": \"Boil Pasta\", \"description\": \"Boil pasta until al dente.\", \"duration\": 10},\r\n    {\"stepOrder\": 2, \"title\": \"Fry Pancetta\", \"description\": \"Fry pancetta until crispy.\", \"duration\": 8},\r\n    {\"stepOrder\": 3, \"title\": \"Mix\", \"description\": \"Mix eggs and cheese, then combine with pasta.\", \"duration\": 5}\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/recipes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"recipes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8081/api/recipes",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Greek Salad\",\r\n  \"category\": \"Salad\",\r\n  \"difficulty\": \"Easy\",\r\n  \"totalTime\": 10,\r\n  \"photos\": [\"salad_main.jpg\"],\r\n  \"ingredients\": [\r\n    {\"name\": \"Tomatoes\", \"quantity\": 3, \"unit\": \"pcs\"},\r\n    {\"name\": \"Cucumber\", \"quantity\": 1, \"unit\": \"pcs\"},\r\n    {\"name\": \"Feta Cheese\", \"quantity\": 200, \"unit\": \"grams\"},\r\n    {\"name\": \"Olive Oil\", \"quantity\": 50, \"unit\": \"ml\"}\r\n  ],\r\n  \"steps\": [\r\n    {\"stepOrder\": 1, \"title\": \"Chop\", \"description\": \"Cut vegetables into pieces.\", \"duration\": 5},\r\n    {\"stepOrder\": 2, \"title\": \"Mix\", \"description\": \"Add feta, olives and oil. Mix gently.\", \"duration\": 5}\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/recipes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"recipes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8081/api/recipes",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Chocolate Cake\",\r\n  \"category\": \"Dessert\",\r\n  \"difficulty\": \"Hard\",\r\n  \"totalTime\": 60,\r\n  \"photos\": [\"cake.jpg\"],\r\n  \"ingredients\": [\r\n    {\"name\": \"Flour\", \"quantity\": 500, \"unit\": \"grams\"},\r\n    {\"name\": \"Sugar\", \"quantity\": 200, \"unit\": \"grams\"},\r\n    {\"name\": \"Cocoa\", \"quantity\": 100, \"unit\": \"grams\"},\r\n    {\"name\": \"Milk\", \"quantity\": 250, \"unit\": \"ml\"}\r\n  ],\r\n  \"steps\": [\r\n    {\"stepOrder\": 1, \"title\": \"Mix\", \"description\": \"Mix dry ingredients with milk.\", \"duration\": 15},\r\n    {\"stepOrder\": 2, \"title\": \"Bake\", \"description\": \"Bake at 180C for 45 minutes.\", \"duration\": 45}\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/recipes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"recipes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8081/api/recipes/1",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Super Carbonara\",\r\n  \"category\": \"Pasta\",\r\n  \"difficulty\": \"Easy\",\r\n  \"totalTime\": 20,\r\n  \"photos\": [\"new_photo.jpg\"],\r\n  \"ingredients\": [],\r\n  \"steps\": []\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/recipes/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"recipes",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8081/api/recipes/4",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Super Carbonara\",\r\n  \"category\": \"Pasta\",\r\n  \"difficulty\": \"Easy\",\r\n  \"totalTime\": 20,\r\n  \"photos\": [\"new_photo.jpg\"],\r\n  \"ingredients\": [],\r\n  \"steps\": []\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/recipes/4",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"recipes",
+						"4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8081/api/recipes/1/progress?completedMinutes=10",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Super Carbonara\",\r\n  \"category\": \"Pasta\",\r\n  \"difficulty\": \"Easy\",\r\n  \"totalTime\": 20,\r\n  \"photos\": [\"new_photo.jpg\"],\r\n  \"ingredients\": [],\r\n  \"steps\": []\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/recipes/1/progress?completedMinutes=10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"recipes",
+						"1",
+						"progress"
+					],
+					"query": [
+						{
+							"key": "completedMinutes",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

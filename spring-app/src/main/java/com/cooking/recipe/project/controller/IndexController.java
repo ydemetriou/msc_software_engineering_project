@@ -1,4 +1,4 @@
-package com.cooking_recipe_project.controller;
+package com.cooking.recipe.project.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

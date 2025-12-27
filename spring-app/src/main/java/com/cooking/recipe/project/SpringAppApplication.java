@@ -1,4 +1,4 @@
-package com.cooking_recipe_project;
+package com.cooking.recipe.project;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
