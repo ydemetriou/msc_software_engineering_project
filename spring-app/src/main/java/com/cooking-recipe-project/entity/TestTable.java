@@ -1,4 +1,4 @@
-package com.cooking_recipe_project.entity;
+package com.cooking.recipe.project.entity;
 
 import jakarta.persistence.*;
 
