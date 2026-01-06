@@ -7,6 +7,7 @@ import java.util.ArrayList;
 @Entity
 @Table(name = "recipes")
 public class RecipeEntity {
-
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 }
