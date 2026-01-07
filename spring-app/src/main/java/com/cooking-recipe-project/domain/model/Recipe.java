@@ -40,6 +40,12 @@ public class Recipe {
         steps.add(step);
     }
 
+    public void removeIngredient(Ingredient ing) {
+        ingredients.remove(ing);
+    }
+
+    public void remove(Step step) { steps.remove(step);    }
+
     public Long getTotalDuration() {
         return steps.stream().mapToLong(Step::getDuration).sum();
     }
@@ -50,4 +56,5 @@ public class Recipe {
     }
 
     // Getters and setters (προαιρετικά)
+
 }
