@@ -3,6 +3,8 @@ package com.cooking.recipe.project.domain.model;
 import java.util.ArrayList;
 import java.util.List;
 import com.cooking.recipe.project.domain.model.Ingredient;
+import com.cooking.recipe.project.domain.model.Category;
+import com.cooking.recipe.project.domain.model.Photo;
 import com.cooking.recipe.project.domain.model.Step;
 
 public class Recipe {
@@ -10,19 +12,19 @@ public class Recipe {
 
     private String name;
 
-    private String category;
+    private Category category;
 
     private String difficulty;
 
     private int totalTime;
 
-    private List<String> photos;
+    private List<Photo> photos;
 
     private List<Ingredient> ingredients;
 
     private List<Step> steps;
 
-    public Recipe(String name, String category, String difficulty, int totalTime) {
+    public Recipe(String name, Category category, String difficulty, int totalTime) {
         this.name = name;
         this.category = category;
         this.difficulty = difficulty;
