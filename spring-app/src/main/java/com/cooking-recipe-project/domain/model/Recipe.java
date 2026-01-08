@@ -37,16 +37,17 @@ public class Recipe {
     public void addIngredient(Ingredient ing) {
         ingredients.add(ing);
     }
-
-    public void addStep(Step step) {
-        steps.add(step);
-    }
-
     public void removeIngredient(Ingredient ing) {
         ingredients.remove(ing);
     }
 
-    public void remove(Step step) { steps.remove(step);    }
+    public void addStep(Step step) {
+        steps.add(step);
+    }
+    public void removeStep(Step step) { steps.remove(step);    }
+
+    public void addPhoto(Photo photo) {photos.add(photo);    }
+    public void removePhoto(Photo photo) { photos.remove(photo); }
 
     public Long getTotalDuration() {
         return steps.stream().mapToLong(Step::getDuration).sum();
@@ -59,4 +60,18 @@ public class Recipe {
 
     // Getters and setters (προαιρετικά)
 
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;    }
+
+    public String getName() {return name;    }
+    public void setName(String name) {this.name = name;}
+
+    public Category getCategory() {return category;}
+    public void setCategory(Category category) {this.category = category;}
+
+    public String getDifficulty() {return difficulty;}
+    public void setDifficulty(String difficulty) {this.difficulty = difficulty;}
+
+    public int getTotalTime() {return totalTime;}
+    public void setTotalTime(int totalTime) {this.totalTime = totalTime;}
 }
