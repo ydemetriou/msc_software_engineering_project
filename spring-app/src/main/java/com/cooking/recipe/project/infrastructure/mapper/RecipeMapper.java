@@ -18,28 +18,28 @@ public class RecipeMapper {
         if (entity == null) return null;
 
         String name = entity.getName();
-        Category category = CategoryMapper.toDomain(entity.getCategory());
+        Category category = com.cooking.recipe.project.infrastructure.mapper.CategoryMapper.toDomain(entity.getCategory());
         String difficulty = entity.getDifficulty();
         int totalTime = entity.getTotalTime();
 
         List<Photo> photos = new ArrayList<>();
         if (entity.getPhotos() != null) {
             photos = entity.getPhotos().stream()
-                    .map(PhotoMapper::toDomain)
+                    .map(com.cooking.recipe.project.infrastructure.mapper.PhotoMapper::toDomain)
                     .collect(Collectors.toList());
         }
 
         List<Ingredient> ingredients = new ArrayList<>();
         if (entity.getIngredients() != null) {
             ingredients = entity.getIngredients().stream()
-                    .map(IngredientMapper::toDomain)
+                    .map(com.cooking.recipe.project.infrastructure.mapper.IngredientMapper::toDomain)
                     .collect(Collectors.toList());
         }
 
         List<Step> steps = new ArrayList<>();
         if (entity.getSteps() != null) {
             steps = entity.getSteps().stream()
-                    .map(StepMapper::toDomain)
+                    .map(com.cooking.recipe.project.infrastructure.mapper.StepMapper::toDomain)
                     .collect(Collectors.toList());
         }
 
@@ -61,14 +61,14 @@ public class RecipeMapper {
             entity.setId(recipe.getId());
         }
         entity.setName(recipe.getName());
-        entity.setCategory(CategoryMapper.toEntity(recipe.getCategory()));
+        entity.setCategory(com.cooking.recipe.project.infrastructure.mapper.CategoryMapper.toEntity(recipe.getCategory()));
         entity.setDifficulty(recipe.getDifficulty());
         entity.setTotalTime(recipe.getTotalTime());
 
         // Photos
         if (recipe.getPhotos() != null) {
             List<PhotoEntity> photoEntities = recipe.getPhotos().stream()
-                    .map(PhotoMapper::toEntity)
+                    .map(com.cooking.recipe.project.infrastructure.mapper.PhotoMapper::toEntity)
                     .collect(Collectors.toList());
             entity.setPhotos(photoEntities);
             if (photoEntities != null) {
@@ -79,7 +79,7 @@ public class RecipeMapper {
         // Ingredients
         if (recipe.getIngredients() != null) {
             List<com.cooking.recipe.project.infrastructure.entity.IngredientEntity> ingredientEntities = recipe.getIngredients().stream()
-                    .map(IngredientMapper::toEntity)
+                    .map(com.cooking.recipe.project.infrastructure.mapper.IngredientMapper::toEntity)
                     .collect(Collectors.toList());
             entity.setIngredients(ingredientEntities);
             if (ingredientEntities != null) {
@@ -90,7 +90,7 @@ public class RecipeMapper {
         // Steps
         if (recipe.getSteps() != null) {
             List<com.cooking.recipe.project.infrastructure.entity.StepEntity> stepEntities = recipe.getSteps().stream()
-                    .map(StepMapper::toEntity)
+                    .map(com.cooking.recipe.project.infrastructure.mapper.StepMapper::toEntity)
                     .collect(Collectors.toList());
             entity.setSteps(stepEntities);
             if (stepEntities != null) {

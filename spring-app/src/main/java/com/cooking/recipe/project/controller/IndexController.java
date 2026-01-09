@@ -15,7 +15,6 @@ import com.cooking.recipe.project.domain.service.CategoryDomainService;
 import com.cooking.recipe.project.domain.service.IngredientDomainService;
 import com.cooking.recipe.project.domain.service.RecipeDomainService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
