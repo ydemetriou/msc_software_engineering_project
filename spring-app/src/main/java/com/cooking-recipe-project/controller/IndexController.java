@@ -16,7 +16,7 @@ public class IndexController {
     public String index() {
         Category category = categoryService.create("test");
         categoryService.save(category);
-        System.out.println("")
+        System.out.println("Category saved with name: " + category.getName());
         return category.getName();
     }
 }
