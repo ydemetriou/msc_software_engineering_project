@@ -4,6 +4,8 @@ public class Photo {
 
     private Long id;
     private String url;
+    private Long recipeId;
+    private Long stepId;
 
     public Photo() {
     }
@@ -28,5 +30,10 @@ public class Photo {
     public void setUrl(String url) {
         this.url = url;
     }
+
+    public Long getRecipeId() {return recipeId; }
+    public void setRecipeId(Long recipeId) {this.recipeId = recipeId; }
+    public Long getStepId() {return stepId;    }
+    public void setStepId(Long stepId) { this.stepId = stepId;    }
 
 }

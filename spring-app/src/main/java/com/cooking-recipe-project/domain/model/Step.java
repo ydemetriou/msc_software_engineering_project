@@ -1,6 +1,10 @@
 package com.cooking.recipe.project.domain.model;
 
 import java.util.List;
+import com.cooking.recipe.project.domain.model.Ingredient;
+import com.cooking.recipe.project.domain.model.Category;
+import com.cooking.recipe.project.domain.model.Photo;
+import com.cooking.recipe.project.domain.model.Step;
 
 public class Step {
 
