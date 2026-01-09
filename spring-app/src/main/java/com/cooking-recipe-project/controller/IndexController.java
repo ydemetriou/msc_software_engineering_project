@@ -14,7 +14,9 @@ public class IndexController {
 
     @GetMapping({"/",  "/index"})
     public String index() {
-        Category category = categoryService.createCategory(1L);
+        Category category = categoryService.create("test");
+        categoryService.save(category);
+        System.out.println("")
         return category.getName();
     }
 }
