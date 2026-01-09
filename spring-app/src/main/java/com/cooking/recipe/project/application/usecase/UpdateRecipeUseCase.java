@@ -17,42 +17,43 @@ public class UpdateRecipeUseCase {
     }
 
     public void execute(Long id, CreateRecipeCommand command) {
-        Recipe recipe = recipeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recipe not found"));
-
-        // Ενημέρωση βασικών πεδίων
-        recipe.setName(command.getName());
-        recipe.setDifficulty(command.getDifficulty());
-        recipe.setTotalTime(command.getTotalTime());
-
-        if (command.getCategory() != null) {
-            recipe.setCategory(new Category(command.getCategory()));
-        }
-
-        // Ενημέρωση Υλικών (Καθαρισμός και ξαναγέμισμα - Ασφαλής μέθοδος)
-        if (command.getIngredients() != null) {
-            recipe.setIngredients(mapIngredients(command.getIngredients()));
-        }
-
-        // Ενημέρωση Βημάτων
-        if (command.getSteps() != null) {
-            List<Step> newSteps = new ArrayList<>();
-            for (StepDto sDto : command.getSteps()) {
-                Step step = new Step(sDto.getTitle(), sDto.getDescription(), sDto.getDuration());
-                if (sDto.getPhotoUrls() != null) {
-                    step.setPhotos(sDto.getPhotoUrls().stream().map(Photo::new).collect(Collectors.toList()));
-                }
-                newSteps.add(step);
-            }
-            recipe.setSteps(newSteps);
-        }
-
-        // Ενημέρωση Φωτογραφιών
-        if (command.getPhotoUrls() != null) {
-            recipe.setPhotos(command.getPhotoUrls().stream().map(Photo::new).collect(Collectors.toList()));
-        }
-
-        recipeRepository.save(recipe);
+// TODO: [UNCOMMENT LATER] Waiting for Repository
+        //        Recipe recipe = recipeRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Recipe not found"));
+//
+//        // Ενημέρωση βασικών πεδίων
+//        recipe.setName(command.getName());
+//        recipe.setDifficulty(command.getDifficulty());
+//        recipe.setTotalTime(command.getTotalTime());
+//
+//        if (command.getCategory() != null) {
+//            recipe.setCategory(new Category(command.getCategory()));
+//        }
+//
+//        // Ενημέρωση Υλικών (Καθαρισμός και ξαναγέμισμα - Ασφαλής μέθοδος)
+//        if (command.getIngredients() != null) {
+//            recipe.setIngredients(mapIngredients(command.getIngredients()));
+//        }
+//
+//        // Ενημέρωση Βημάτων
+//        if (command.getSteps() != null) {
+//            List<Step> newSteps = new ArrayList<>();
+//            for (StepDto sDto : command.getSteps()) {
+//                Step step = new Step(sDto.getTitle(), sDto.getDescription(), sDto.getDuration());
+//                if (sDto.getPhotoUrls() != null) {
+//                    step.setPhotos(sDto.getPhotoUrls().stream().map(Photo::new).collect(Collectors.toList()));
+//                }
+//                newSteps.add(step);
+//            }
+//            recipe.setSteps(newSteps);
+//        }
+//
+//        // Ενημέρωση Φωτογραφιών
+//        if (command.getPhotoUrls() != null) {
+//            recipe.setPhotos(command.getPhotoUrls().stream().map(Photo::new).collect(Collectors.toList()));
+//        }
+//
+//        recipeRepository.save(recipe);
     }
 
     private List<Ingredient> mapIngredients(List<IngredientDto> dtos) {

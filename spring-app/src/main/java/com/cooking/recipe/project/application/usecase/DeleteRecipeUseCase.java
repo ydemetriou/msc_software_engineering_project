@@ -12,6 +12,7 @@ public class DeleteRecipeUseCase {
     }
 
     public void execute(Long id) {
-        recipeRepository.deleteById(id);
+// TODO: [UNCOMMENT LATER] Waiting for Repository
+// recipeRepository.deleteById(id);
     }
 }

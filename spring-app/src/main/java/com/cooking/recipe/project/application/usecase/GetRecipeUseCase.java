@@ -14,10 +14,13 @@ public class GetRecipeUseCase {
     }
 
     public RecipeDto execute(Long id) {
-        Recipe recipe = recipeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recipe not found"));
-
-        // Ο Constructor του RecipeDto κάνει όλη τη δύσκολη δουλειά του mapping
-        return new RecipeDto(recipe);
+//        TODO: [UNCOMMENT LATER] Waiting for Repository Implementation
+//        Recipe recipe = recipeRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Recipe not found"));
+//
+//        // Ο Constructor του RecipeDto κάνει όλη τη δύσκολη δουλειά του mapping
+//        return new RecipeDto(recipe);
+        // προσωρινα null για να μην εχω error
+        return null;
     }
 }
