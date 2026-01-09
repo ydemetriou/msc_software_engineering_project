@@ -1,6 +1,7 @@
 package com.cooking.recipe.project.infrastructure.entity;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "steps")
@@ -19,6 +20,13 @@ public class StepEntity {
     @Column
     private Long duration;
 
+    @OneToMany(mappedBy = "step", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PhotoEntity> photos;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipe_id")
+    private RecipeEntity recipe;
+
     public StepEntity() {
     }
 
@@ -28,7 +36,10 @@ public class StepEntity {
         this.duration = duration;
     }
 
-    public StepEntity(Long id, String title, String description, Long duration) {
+    public StepEntity(
+            Long id,
+            String title,
+            String description, Long duration) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -65,5 +76,21 @@ public class StepEntity {
 
     public void setDuration(Long duration) {
         this.duration = duration;
+    }
+
+    public List<PhotoEntity> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(List<PhotoEntity> photos) {
+        this.photos = photos;
+    }
+
+    public RecipeEntity getRecipe() {
+        return recipe;
+    }
+
+    public void setRecipe(RecipeEntity recipe) {
+        this.recipe = recipe;
     }
 }

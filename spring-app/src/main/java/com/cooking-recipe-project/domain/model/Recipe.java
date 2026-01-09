@@ -24,14 +24,22 @@ public class Recipe {
 
     private List<Step> steps;
 
-    public Recipe(String name, Category category, String difficulty, int totalTime) {
+    public Recipe(
+            String name,
+            Category category,
+            String difficulty,
+            int totalTime,
+            List<Photo> photos,
+            List<Ingredient> ingredients,
+            List<Step> steps)
+    {
         this.name = name;
         this.category = category;
         this.difficulty = difficulty;
         this.totalTime = totalTime;
-        this.photos = new ArrayList<>();
-        this.ingredients = new ArrayList<>();
-        this.steps = new ArrayList<>();
+        this.photos = photos;
+        this.ingredients = ingredients;
+        this.steps = steps;
     }
 
     public void addIngredient(Ingredient ing) {
