@@ -23,6 +23,10 @@ public class IngredientEntity {
     @JoinColumn(name = "recipe_id")
     private RecipeEntity recipe;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "step_id")
+    private StepEntity step;
+
     public IngredientEntity() {
     }
 
@@ -49,4 +53,7 @@ public class IngredientEntity {
 
     public RecipeEntity getRecipe() { return recipe; }
     public void setRecipe(RecipeEntity recipe) { this.recipe = recipe; }
+
+    public StepEntity getStep() { return step; }
+    public void setStep(StepEntity step) { this.step = step; }
 }

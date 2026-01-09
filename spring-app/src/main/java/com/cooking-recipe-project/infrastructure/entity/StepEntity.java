@@ -23,6 +23,9 @@ public class StepEntity {
     @OneToMany(mappedBy = "step", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PhotoEntity> photos;
 
+    @OneToMany(mappedBy = "step", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<IngredientEntity> ingredients;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipe_id")
     private RecipeEntity recipe;
@@ -84,6 +87,14 @@ public class StepEntity {
 
     public void setPhotos(List<PhotoEntity> photos) {
         this.photos = photos;
+    }
+
+    public List<IngredientEntity> getIngredients() {
+        return ingredients;
+    }
+
+    public void setIngredients(List<IngredientEntity> ingredients) {
+        this.ingredients = ingredients;
     }
 
     public RecipeEntity getRecipe() {
