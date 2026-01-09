@@ -27,8 +27,8 @@ public class RecipeEntity {
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PhotoEntity> photos;
 
-//    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<IngredientEntity> ingredients;
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<IngredientEntity> ingredients;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StepEntity> steps;
@@ -80,14 +80,14 @@ public class RecipeEntity {
     public void setPhotos(List<PhotoEntity> photos) {
         this.photos = photos;
     }
-//
-//    public List<IngredientEntity> getIngredients() {
-//        return ingredients;
-//    }
-//
-//    public void setIngredients(List<IngredientEntity> ingredients) {
-//        this.ingredients = ingredients;
-//    }
+
+    public List<IngredientEntity> getIngredients() {
+        return ingredients;
+    }
+
+    public void setIngredients(List<IngredientEntity> ingredients) {
+        this.ingredients = ingredients;
+    }
 
     public List<StepEntity> getSteps() {
         return steps;

@@ -29,8 +29,12 @@ public class RecipeMapper {
                     .collect(Collectors.toList());
         }
 
-        // Ingredients mapping is omitted because IngredientEntity is not present in the project
         List<Ingredient> ingredients = new ArrayList<>();
+        if (entity.getIngredients() != null) {
+            ingredients = entity.getIngredients().stream()
+                    .map(IngredientMapper::toDomain)
+                    .collect(Collectors.toList());
+        }
 
         List<Step> steps = new ArrayList<>();
         if (entity.getSteps() != null) {

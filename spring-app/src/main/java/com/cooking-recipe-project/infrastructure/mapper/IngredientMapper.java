@@ -7,14 +7,25 @@ public class IngredientMapper {
 
     public static IngredientEntity toEntity(Ingredient ingredient) {
         if (ingredient == null) return null;
+        IngredientEntity entity = new IngredientEntity();
         if (ingredient.getId() != null) {
-            return new IngredientEntity(ingredient.getId(), ingredient.getName());
+            entity.setId(ingredient.getId());
         }
-        return new IngredientEntity(ingredient.getName());
+        entity.setName(ingredient.getName());
+        entity.setQuantity(ingredient.getQuantity());
+        entity.setUnit(ingredient.getUnit());
+        return entity;
     }
 
     public static Ingredient toDomain(IngredientEntity entity) {
         if (entity == null) return null;
-        return new Ingredient(entity.getId(), entity.getName());
+        Ingredient ingredient = new Ingredient();
+        ingredient.setId(entity.getId());
+        ingredient.setName(entity.getName());
+        if (entity.getQuantity() != null) {
+            ingredient.setQuantity(entity.getQuantity());
+        }
+        ingredient.setUnit(entity.getUnit());
+        return ingredient;
     }
 }
