@@ -53,4 +53,51 @@ public class RecipeMapper {
                 steps
         );
     }
+
+    public static RecipeEntity toEntity(Recipe recipe) {
+        if (recipe == null) return null;
+        RecipeEntity entity = new RecipeEntity();
+        if (recipe.getId() != null) {
+            entity.setId(recipe.getId());
+        }
+        entity.setName(recipe.getName());
+        entity.setCategory(CategoryMapper.toEntity(recipe.getCategory()));
+        entity.setDifficulty(recipe.getDifficulty());
+        entity.setTotalTime(recipe.getTotalTime());
+
+        // Photos
+        if (recipe.getPhotos() != null) {
+            List<PhotoEntity> photoEntities = recipe.getPhotos().stream()
+                    .map(PhotoMapper::toEntity)
+                    .collect(Collectors.toList());
+            entity.setPhotos(photoEntities);
+            if (photoEntities != null) {
+                photoEntities.forEach(pe -> pe.setRecipe(entity));
+            }
+        }
+
+        // Ingredients
+        if (recipe.getIngredients() != null) {
+            List<com.cooking.recipe.project.infrastructure.entity.IngredientEntity> ingredientEntities = recipe.getIngredients().stream()
+                    .map(IngredientMapper::toEntity)
+                    .collect(Collectors.toList());
+            entity.setIngredients(ingredientEntities);
+            if (ingredientEntities != null) {
+                ingredientEntities.forEach(ie -> ie.setRecipe(entity));
+            }
+        }
+
+        // Steps
+        if (recipe.getSteps() != null) {
+            List<com.cooking.recipe.project.infrastructure.entity.StepEntity> stepEntities = recipe.getSteps().stream()
+                    .map(StepMapper::toEntity)
+                    .collect(Collectors.toList());
+            entity.setSteps(stepEntities);
+            if (stepEntities != null) {
+                stepEntities.forEach(se -> se.setRecipe(entity));
+            }
+        }
+
+        return entity;
+    }
 }

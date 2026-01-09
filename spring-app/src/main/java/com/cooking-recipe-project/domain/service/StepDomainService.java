@@ -19,4 +19,23 @@ public class StepDomainService {
 
         return StepMapper.toDomain(entity);
     }
+
+    public Step create(String title, String description, Long duration) {
+        return new Step(title, description, duration);
+    }
+
+    public Step save(Step step) {
+        StepEntity saved = stepRepository.save(StepMapper.toEntity(step));
+        return StepMapper.toDomain(saved);
+    }
+
+    public Step update(Step step) {
+        if (step == null || step.getId() == null) return null;
+        StepEntity saved = stepRepository.save(StepMapper.toEntity(step));
+        return StepMapper.toDomain(saved);
+    }
+
+    public void delete(Long id) {
+        if (id != null) stepRepository.deleteById(id);
+    }
 }

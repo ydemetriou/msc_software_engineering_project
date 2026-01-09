@@ -18,5 +18,27 @@ public class IngredientDomainService {
         if (entity == null) return null;
         return IngredientMapper.toDomain(entity);
     }
-}
 
+    public Ingredient create(String name, double quantity, String unit) {
+        Ingredient ing = new Ingredient();
+        ing.setName(name);
+        ing.setQuantity(quantity);
+        ing.setUnit(unit);
+        return ing;
+    }
+
+    public Ingredient save(Ingredient ingredient) {
+        IngredientEntity saved = ingredientRepository.save(IngredientMapper.toEntity(ingredient));
+        return IngredientMapper.toDomain(saved);
+    }
+
+    public Ingredient update(Ingredient ingredient) {
+        if (ingredient == null || ingredient.getId() == null) return null;
+        IngredientEntity saved = ingredientRepository.save(IngredientMapper.toEntity(ingredient));
+        return IngredientMapper.toDomain(saved);
+    }
+
+    public void delete(Long id) {
+        if (id != null) ingredientRepository.deleteById(id);
+    }
+}

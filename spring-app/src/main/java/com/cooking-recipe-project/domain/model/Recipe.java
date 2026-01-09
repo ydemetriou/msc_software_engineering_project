@@ -82,4 +82,13 @@ public class Recipe {
 
     public int getTotalTime() {return totalTime;}
     public void setTotalTime(int totalTime) {this.totalTime = totalTime;}
+
+    public List<Photo> getPhotos() { return photos; }
+    public void setPhotos(List<Photo> photos) { this.photos = photos; }
+
+    public List<Ingredient> getIngredients() { return ingredients; }
+    public void setIngredients(List<Ingredient> ingredients) { this.ingredients = ingredients; }
+
+    public List<Step> getSteps() { return steps; }
+    public void setSteps(List<Step> steps) { this.steps = steps; }
 }

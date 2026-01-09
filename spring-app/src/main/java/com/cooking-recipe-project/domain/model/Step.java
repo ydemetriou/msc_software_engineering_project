@@ -14,6 +14,8 @@ public class Step {
 
     private List<Photo> photos;
 
+    private List<Ingredient> ingredients;
+
     public Step() {
     }
 
@@ -67,6 +69,12 @@ public class Step {
         this.duration = duration;
     }
 
+    public List<Photo> getPhotos() { return photos; }
+    public void setPhotos(List<Photo> photos) { this.photos = photos; }
+
+    public List<Ingredient> getIngredients() { return ingredients; }
+    public void setIngredients(List<Ingredient> ingredients) { this.ingredients = ingredients; }
+
     public void addPhoto(Photo photo) {
         this.photos.add(photo);
     }
@@ -74,4 +82,7 @@ public class Step {
     public void removePhoto(Photo photo) {
         this.photos.remove(photo);
     }
+
+    public void addIngredient(Ingredient ing) { this.ingredients.add(ing); }
+    public void removeIngredient(Ingredient ing) { this.ingredients.remove(ing); }
 }
