@@ -1,164 +1,199 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, use } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default function RecipeDetails() {
-  const { id } = useParams();
+export default function RecipeDetails({ params: paramsPromise }) {
+  const [id, setId] = useState(null);
+
+  useEffect(() => {
+    if (paramsPromise instanceof Promise) {
+      paramsPromise.then((p) => setId(p.id));
+    } else {
+      setId(paramsPromise.id);
+    }
+  }, [paramsPromise]);
+
   const router = useRouter();
   const [recipe, setRecipe] = useState(null);
-  const [completedStepIds, setCompletedStepIds] = useState([]);
-  const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:8081/api/recipes/${id}`)
-      .then((res) => {
+    if (!id) return;
+
+    const fetchRecipe = async () => {
+      try {
+        const res = await fetch(`http://localhost:8081/api/recipes/${id}`);
         if (!res.ok) throw new Error("Recipe not found");
-        return res.json();
-      })
-      .then((data) => {
-        // Προσθέτουμε ids στα βήματα αν δεν έχουν, για να δουλεύει το checkbox
-        const stepsWithIds = data.steps.map((s, index) => ({
-          ...s,
-          id: index, // Προσωρινό ID αν το backend δεν στέλνει ID βήματος
-        }));
-        setRecipe({ ...data, steps: stepsWithIds });
-      })
-      .catch((err) => {
-        console.error(err);
-        // alert("Η συνταγή δεν βρέθηκε!"); // Uncomment αν θες
+        const data = await res.json();
+        setRecipe(data);
+      } catch (err) {
+        alert("Η συνταγή δεν βρέθηκε!");
+        router.push("/");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecipe();
+  }, [id, router]);
+
+  const handleDelete = async () => {
+    if (!confirm("Είσαι σίγουρος ότι θες να διαγράψεις τη συνταγή;")) return;
+
+    try {
+      await fetch(`http://localhost:8081/api/recipes/${id}`, {
+        method: "DELETE",
       });
-  }, [id]);
-
-  // Υπολογισμός Προόδου
-  useEffect(() => {
-    if (!recipe) return;
-    const completedSteps = recipe.steps.filter((step) =>
-      completedStepIds.includes(step.id)
-    );
-    const completedTime = completedSteps.reduce(
-      (sum, step) => sum + (step.duration || 0),
-      0
-    );
-    const totalTime = recipe.totalTime > 0 ? recipe.totalTime : 1;
-    let percentage = (completedTime / totalTime) * 100;
-    if (percentage > 100) percentage = 100;
-    setProgress(Math.round(percentage));
-  }, [completedStepIds, recipe]);
-
-  const toggleStep = (stepId) => {
-    if (completedStepIds.includes(stepId)) {
-      setCompletedStepIds(completedStepIds.filter((id) => id !== stepId));
-    } else {
-      setCompletedStepIds([...completedStepIds, stepId]);
+      alert("Διαγράφηκε επιτυχώς!");
+      router.push("/");
+    } catch (err) {
+      alert("Σφάλμα κατά τη διαγραφή");
     }
   };
 
-  if (!recipe) return <div className="text-center mt-10">Φόρτωση...</div>;
+  if (loading || !recipe)
+    return <div className="p-10 text-center">Φόρτωση...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Header */}
-        <div className="bg-blue-600 p-8 text-white relative">
-          <button
-            onClick={() => router.push("/")}
-            className="absolute top-4 left-4 text-white hover:underline"
-          >
-            ← Πίσω
-          </button>
-          <h1 className="text-4xl font-bold mb-2">{recipe.name}</h1>
-          <div className="flex gap-4 text-blue-100">
-            <span>📂 {recipe.category}</span>
-            <span>⏱️ {recipe.totalTime} λεπτά</span>
-            <span>📊 {recipe.difficulty}</span>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden">
+        {/* Header με Κεντρική Φωτογραφία */}
+        <div className="relative h-64 bg-gray-200">
+          {recipe.photoUrls && recipe.photoUrls.length > 0 ? (
+            <img
+              src={recipe.photoUrls[0]}
+              alt={recipe.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-400 text-4xl">
+              🍳
+            </div>
+          )}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6">
+            <h1 className="text-4xl font-bold text-white">{recipe.name}</h1>
+            <div className="text-white opacity-90 mt-2 flex gap-4">
+              <span className="bg-blue-600 px-2 py-1 rounded text-sm">
+                {recipe.category}
+              </span>
+              <span className="bg-orange-500 px-2 py-1 rounded text-sm">
+                {recipe.difficulty}
+              </span>
+              <span className="bg-green-600 px-2 py-1 rounded text-sm">
+                ⏱️ {recipe.totalTime}'
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="p-8">
-          {/* Progress Bar */}
-          <div className="mb-8 sticky top-0 bg-white py-4 z-10 border-b">
-            <div className="flex justify-between mb-1">
-              <span className="font-bold text-gray-700">Πρόοδος</span>
-              <span className="font-bold text-blue-600">{progress}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-4">
-              <div
-                className="bg-green-500 h-4 rounded-full transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
+        {/* Action Buttons */}
+        <div className="p-4 bg-gray-100 flex gap-3 border-b">
+          <Link
+            href="/"
+            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          >
+            ← Πίσω
+          </Link>
+          <Link
+            href={`/edit/${recipe.id}`}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            ✏️ Επεξεργασία
+          </Link>
+          <button
+            onClick={handleDelete}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            🗑️ Διαγραφή
+          </button>
+          <Link
+            href={`/run/${recipe.id}`}
+            className="ml-auto px-6 py-2 bg-purple-600 text-white font-bold rounded shadow hover:bg-purple-700"
+          >
+            ▶️ ΕΚΤΕΛΕΣΗ
+          </Link>
+        </div>
+
+        <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-1 bg-yellow-50 p-6 rounded-lg border border-yellow-100 h-fit">
+            <h2 className="text-xl font-bold mb-4 text-yellow-800">
+              🛒 Υλικά Συνταγής
+            </h2>
+            <ul className="space-y-2">
+              {recipe.ingredients.map((ing, i) => (
+                <li
+                  key={i}
+                  className="flex justify-between border-b border-yellow-200 pb-1 last:border-0"
+                >
+                  <span>{ing.name}</span>
+                  <span className="font-bold">
+                    {ing.quantity}
+                    {ing.unit}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Στήλη 1: Υλικά Συνταγής */}
-            <div className="md:col-span-1 bg-orange-50 p-6 rounded-lg h-fit">
-              <h3 className="text-xl font-bold mb-4 text-orange-800">
-                🛒 Υλικά
-              </h3>
-              <ul className="space-y-2">
-                {recipe.ingredients.map((ing, idx) => (
-                  <li
-                    key={idx}
-                    className="flex items-center gap-2 border-b pb-1 border-orange-200"
-                  >
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 text-orange-600"
-                    />
-                    <span>
-                      {ing.quantity}
-                      {ing.unit} <strong>{ing.name}</strong>
+          <div className="md:col-span-2 space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">👣 Εκτέλεση</h2>
+
+            {recipe.steps.map((step, i) => (
+              <div
+                key={i}
+                className="border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition"
+              >
+                <div className="flex bg-gray-50 border-b p-3 items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold">
+                      {i + 1}
                     </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                    <h3 className="font-bold text-lg">{step.title}</h3>
+                  </div>
+                  <span className="text-sm bg-gray-200 px-2 py-1 rounded">
+                    ⏱️ {step.duration}'
+                  </span>
+                </div>
 
-            {/* Στήλη 2: Βήματα */}
-            <div className="md:col-span-2">
-              <h3 className="text-xl font-bold mb-4 text-gray-800">
-                👣 Εκτέλεση
-              </h3>
-              <div className="space-y-4">
-                {recipe.steps.map((step) => (
-                  <div
-                    key={step.id}
-                    onClick={() => toggleStep(step.id)}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      completedStepIds.includes(step.id)
-                        ? "border-green-500 bg-green-50 opacity-80"
-                        : "border-gray-200 bg-white"
-                    }`}
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-bold text-lg">{step.title}</h4>
-                      <span className="bg-gray-100 text-xs font-bold px-2 py-1 rounded">
-                        ⏱️ {step.duration}'
-                      </span>
-                    </div>
-                    <p className="text-gray-600 mb-3">{step.description}</p>
+                <div className="p-4">
+                  <p className="text-gray-700 mb-4 whitespace-pre-wrap">
+                    {step.description}
+                  </p>
 
-                    {/* Φωτογραφία Βήματος (Αλλαγή: photoUrls αντί για stepPhotos) */}
-                    {step.photoUrls && step.photoUrls.length > 0 && (
+                  {/* Φωτογραφία Βήματος */}
+                  {step.photoUrls && step.photoUrls.length > 0 && (
+                    <div className="mb-4">
                       <img
                         src={step.photoUrls[0]}
-                        alt={step.title}
-                        className="w-full h-48 object-cover rounded mb-3"
+                        alt={`Step ${i + 1}`}
+                        className="rounded-lg max-h-64 object-cover border"
                       />
-                    )}
+                    </div>
+                  )}
 
-                    {/* Υλικά Βήματος (Αλλαγή: Είναι λίστα objects τώρα) */}
-                    {step.ingredients && step.ingredients.length > 0 && (
-                      <div className="bg-yellow-50 p-2 rounded text-sm text-gray-700">
-                        <strong>Υλικά βήματος: </strong>
-                        {step.ingredients.map((i) => i.name).join(", ")}
+                  {step.ingredients && step.ingredients.length > 0 && (
+                    <div className="bg-blue-50 p-3 rounded text-sm">
+                      <span className="font-bold text-blue-800 block mb-1">
+                        Για αυτό το βήμα χρειάζεσαι:
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {step.ingredients.map((ing, k) => (
+                          <span
+                            key={k}
+                            className="bg-white border border-blue-200 px-2 py-1 rounded text-blue-600"
+                          >
+                            {ing.name} ({ing.quantity}
+                            {ing.unit})
+                          </span>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

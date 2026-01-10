@@ -4,9 +4,20 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function CreateRecipe() {
+export default function EditRecipe({ params: paramsPromise }) {
   const router = useRouter();
-  const [loadingLists, setLoadingLists] = useState(true);
+
+  // Unwrap params
+  const [id, setId] = useState(null);
+  useEffect(() => {
+    if (paramsPromise instanceof Promise) {
+      paramsPromise.then((p) => setId(p.id));
+    } else {
+      setId(paramsPromise.id);
+    }
+  }, [paramsPromise]);
+
+  const [loading, setLoading] = useState(true);
 
   // Lists
   const [categoriesList, setCategoriesList] = useState([]);
@@ -16,21 +27,19 @@ export default function CreateRecipe() {
   // Form State
   const [recipe, setRecipe] = useState({
     name: "",
-    category: "",
+    category: "", // Θα αρχικοποιηθεί σωστά παρακάτω
     difficulty: "",
-    totalTime: 0, // Αυτό πλέον θα υπολογίζεται αυτόματα
-    mainPhotoUrl: "", // ΝΕΟ: Κεντρική Φωτογραφία
+    totalTime: 0,
+    mainPhotoUrl: "",
     ingredients: [],
     steps: [],
   });
 
-  // Temporary Inputs
   const [tempIngredient, setTempIngredient] = useState({
     name: "",
     quantity: "",
     unit: "",
   });
-
   const [tempStep, setTempStep] = useState({
     title: "",
     description: "",
@@ -39,42 +48,69 @@ export default function CreateRecipe() {
     selectedIngredients: [],
   });
 
-  // 1. Fetch Lists & Initial Setup
+  // 1. Fetch Data
   useEffect(() => {
-    const fetchData = async () => {
+    if (!id) return;
+
+    const loadData = async () => {
       try {
-        const [catRes, unitRes, diffRes] = await Promise.all([
+        const [catRes, unitRes, diffRes, recipeRes] = await Promise.all([
           fetch("http://localhost:8081/api/references/categories"),
           fetch("http://localhost:8081/api/references/units"),
           fetch("http://localhost:8081/api/references/difficulties"),
+          fetch(`http://localhost:8081/api/recipes/${id}`),
         ]);
 
         const catData = await catRes.json();
         const unitData = await unitRes.json();
         const diffData = await diffRes.json();
+        const recipeData = await recipeRes.json();
 
         setCategoriesList(catData);
         setUnitsList(unitData);
         setDifficultiesList(diffData);
 
-        // Defaults
-        setRecipe((prev) => ({
-          ...prev,
-          category: catData[0] || "Ζυμαρικά",
-          difficulty: diffData[0] || "EASY",
-        }));
+        // Populate Form with existing data
+        setRecipe({
+          name: recipeData.name || "",
+          // Ασφάλεια για το Select Error: Αν είναι null, βάλε κενό ή το πρώτο της λίστας
+          category: recipeData.category || catData[0] || "",
+          difficulty: recipeData.difficulty || diffData[0] || "",
+          totalTime: recipeData.totalTime || 0,
+          mainPhotoUrl: recipeData.photoUrls?.[0] || "",
+
+          ingredients: recipeData.ingredients.map((i) => ({
+            name: i.name,
+            quantity: i.quantity,
+            unit: i.unit || unitData[0],
+          })),
+
+          steps: recipeData.steps.map((s) => ({
+            title: s.title,
+            description: s.description,
+            duration: s.duration,
+            photoUrl: s.photoUrls?.[0] || "",
+            // Εδώ κάνουμε map τα υλικά του βήματος πίσω σε ονόματα για τα checkboxes
+            selectedIngredients: s.ingredients
+              ? s.ingredients.map((i) => i.name)
+              : [],
+            stepOrder: s.stepOrder,
+          })),
+        });
+
         setTempIngredient((prev) => ({ ...prev, unit: unitData[0] || "GR" }));
-        setLoadingLists(false);
+        setLoading(false);
       } catch (err) {
-        console.error("Error loading lists:", err);
-        setLoadingLists(false);
+        console.error("Error:", err);
+        alert("Σφάλμα φόρτωσης δεδομένων");
+        router.push("/");
       }
     };
-    fetchData();
-  }, []);
 
-  // 2. ΑΥΤΟΜΑΤΟΣ ΥΠΟΛΟΓΙΣΜΟΣ ΧΡΟΝΟΥ
-  // Κάθε φορά που αλλάζουν τα steps, ξαναμετράμε τον χρόνο
+    loadData();
+  }, [id, router]);
+
+  // Auto-calculate time
   useEffect(() => {
     const total = recipe.steps.reduce(
       (sum, step) => sum + parseInt(step.duration || 0),
@@ -83,31 +119,32 @@ export default function CreateRecipe() {
     setRecipe((prev) => ({ ...prev, totalTime: total }));
   }, [recipe.steps]);
 
-  // 3. Submit Handler
+  // Submit Handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (recipe.ingredients.length === 0 || recipe.steps.length === 0) {
-      alert("Πρόσθεσε υλικά και βήματα!");
-      return;
+    // Validation για τον χρόνο
+    const calculatedTime = recipe.steps.reduce(
+      (sum, step) => sum + parseInt(step.duration || 0),
+      0
+    );
+    if (calculatedTime !== recipe.totalTime) {
+      // Force update to match logic
+      setRecipe((prev) => ({ ...prev, totalTime: calculatedTime }));
     }
 
     const payload = {
       name: recipe.name,
       category: recipe.category,
       difficulty: recipe.difficulty,
-      totalTime: recipe.totalTime,
-      // Στέλνουμε την κεντρική φωτο σε λίστα (όπως θέλει το backend)
+      totalTime: calculatedTime, // Στέλνουμε το υπολογισμένο
       photoUrls: recipe.mainPhotoUrl ? [recipe.mainPhotoUrl] : [],
-
       ingredients: recipe.ingredients.map((ing) => ({
         name: ing.name,
         quantity: parseFloat(ing.quantity),
         unit: ing.unit,
       })),
-
       steps: recipe.steps.map((step) => {
-        // Βρίσκουμε τα πλήρη αντικείμενα των επιλεγμένων υλικών
         const stepIngredientsObjects = recipe.ingredients
           .filter((ing) => step.selectedIngredients.includes(ing.name))
           .map((ing) => ({
@@ -120,7 +157,6 @@ export default function CreateRecipe() {
           title: step.title,
           description: step.description,
           duration: parseInt(step.duration),
-          // Στέλνουμε τη φωτο βήματος
           photoUrls: step.photoUrl ? [step.photoUrl] : [],
           ingredients: stepIngredientsObjects,
         };
@@ -128,17 +164,16 @@ export default function CreateRecipe() {
     };
 
     try {
-      const res = await fetch("http://localhost:8081/api/recipes", {
-        method: "POST",
+      const res = await fetch(`http://localhost:8081/api/recipes/${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        alert("Επιτυχία!");
-        router.push("/");
+        alert("Η συνταγή ενημερώθηκε!");
+        router.push(`/recipe/${id}`);
       } else {
-        // Εδώ θα εμφανιστεί το μήνυμα λάθους από το Backend αν οι χρόνοι δεν ταιριάζουν
         const errorData = await res.json();
         alert("Σφάλμα: " + (errorData.message || "Κάτι πήγε στραβά"));
       }
@@ -147,7 +182,7 @@ export default function CreateRecipe() {
     }
   };
 
-  // Helper Functions (Add/Remove)
+  // Helper Functions
   const addIngredient = () => {
     if (!tempIngredient.name || !tempIngredient.quantity) return;
     setRecipe((prev) => ({
@@ -162,7 +197,6 @@ export default function CreateRecipe() {
     setRecipe((prev) => ({
       ...prev,
       ingredients: prev.ingredients.filter((_, i) => i !== idx),
-      // Καθαρισμός και από τα βήματα
       steps: prev.steps.map((s) => ({
         ...s,
         selectedIngredients: s.selectedIngredients.filter((n) => n !== ingName),
@@ -188,6 +222,22 @@ export default function CreateRecipe() {
     });
   };
 
+  // --- ΝΕΑ ΛΕΙΤΟΥΡΓΙΑ: EDIT STEP ---
+  const editStep = (idx) => {
+    const stepToEdit = recipe.steps[idx];
+    // Φορτώνουμε τα δεδομένα στη φόρμα
+    setTempStep({
+      title: stepToEdit.title,
+      description: stepToEdit.description,
+      duration: stepToEdit.duration,
+      photoUrl: stepToEdit.photoUrl,
+      selectedIngredients: stepToEdit.selectedIngredients,
+    });
+    // Αφαιρούμε το βήμα από τη λίστα (ο χρήστης θα το ξαναπροσθέσει πατώντας "Προσθήκη")
+    removeStep(idx);
+  };
+  // ---------------------------------
+
   const removeStep = (idx) => {
     setRecipe((prev) => ({
       ...prev,
@@ -206,23 +256,22 @@ export default function CreateRecipe() {
     });
   };
 
-  if (loadingLists) return <div className="p-10">Φόρτωση...</div>;
+  if (loading) return <div className="p-10 text-center">Φόρτωση...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto bg-white shadow rounded-xl overflow-hidden">
-        <div className="bg-blue-600 p-6 flex justify-between items-center text-white">
-          <h1 className="text-3xl font-bold">🍳 Νέα Συνταγή</h1>
-          <Link href="/" className="hover:underline">
-            ← Πίσω
+        <div className="bg-orange-600 p-6 flex justify-between items-center text-white">
+          <h1 className="text-3xl font-bold">✏️ Επεξεργασία Συνταγής</h1>
+          <Link href={`/recipe/${id}`} className="hover:underline">
+            ← Ακύρωση
           </Link>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          {/* ΓΕΝΙΚΑ ΣΤΟΙΧΕΙΑ */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block font-bold mb-1">Όνομα Συνταγής</label>
+              <label className="block font-bold mb-1">Όνομα</label>
               <input
                 type="text"
                 className="w-full border p-2 rounded"
@@ -231,28 +280,22 @@ export default function CreateRecipe() {
                 onChange={(e) => setRecipe({ ...recipe, name: e.target.value })}
               />
             </div>
-
-            {/* ΝΕΟ: Κεντρική Φωτογραφία */}
             <div>
-              <label className="block font-bold mb-1">
-                URL Κεντρικής Φωτογραφίας
-              </label>
+              <label className="block font-bold mb-1">Φωτογραφία URL</label>
               <input
                 type="text"
                 className="w-full border p-2 rounded"
-                placeholder="https://..."
                 value={recipe.mainPhotoUrl}
                 onChange={(e) =>
                   setRecipe({ ...recipe, mainPhotoUrl: e.target.value })
                 }
               />
             </div>
-
             <div>
               <label className="block font-bold mb-1">Κατηγορία</label>
               <select
                 className="w-full border p-2 rounded"
-                value={recipe.category}
+                value={recipe.category || ""}
                 onChange={(e) =>
                   setRecipe({ ...recipe, category: e.target.value })
                 }
@@ -264,12 +307,11 @@ export default function CreateRecipe() {
                 ))}
               </select>
             </div>
-
             <div>
               <label className="block font-bold mb-1">Δυσκολία</label>
               <select
                 className="w-full border p-2 rounded"
-                value={recipe.difficulty}
+                value={recipe.difficulty || ""}
                 onChange={(e) =>
                   setRecipe({ ...recipe, difficulty: e.target.value })
                 }
@@ -281,29 +323,20 @@ export default function CreateRecipe() {
                 ))}
               </select>
             </div>
-
-            {/* READ-ONLY TOTAL TIME */}
             <div className="md:col-span-2">
-              <label className="block font-bold mb-1">
-                Συνολικός Χρόνος (Αυτόματος)
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  className="w-32 border p-2 rounded bg-gray-100 font-bold text-blue-600"
-                  readOnly
-                  value={recipe.totalTime}
-                />
-                <span className="text-gray-500 text-sm">
-                  (Υπολογίζεται από το άθροισμα των βημάτων)
-                </span>
-              </div>
+              <label className="block font-bold mb-1">Συνολικός Χρόνος</label>
+              <input
+                type="number"
+                className="w-32 border p-2 rounded bg-gray-100 font-bold"
+                readOnly
+                value={recipe.totalTime}
+              />
             </div>
           </div>
 
           <hr />
 
-          {/* ΥΛΙΚΑ */}
+          {/* Ingredients */}
           <div>
             <h2 className="text-xl font-bold mb-4">🛒 Υλικά</h2>
             <div className="flex gap-2 mb-4">
@@ -330,7 +363,7 @@ export default function CreateRecipe() {
               />
               <select
                 className="border p-2 rounded w-32"
-                value={tempIngredient.unit}
+                value={tempIngredient.unit || ""}
                 onChange={(e) =>
                   setTempIngredient({ ...tempIngredient, unit: e.target.value })
                 }
@@ -344,7 +377,7 @@ export default function CreateRecipe() {
               <button
                 type="button"
                 onClick={addIngredient}
-                className="bg-green-500 text-white px-4 rounded"
+                className="bg-orange-500 text-white px-4 rounded"
               >
                 +
               </button>
@@ -353,7 +386,7 @@ export default function CreateRecipe() {
               {recipe.ingredients.map((ing, i) => (
                 <div
                   key={i}
-                  className="bg-blue-50 text-blue-800 px-3 py-1 rounded-full border border-blue-200 flex items-center gap-2"
+                  className="bg-orange-50 text-orange-800 px-3 py-1 rounded-full border border-orange-200 flex items-center gap-2"
                 >
                   {ing.name}{" "}
                   <b>
@@ -374,7 +407,7 @@ export default function CreateRecipe() {
 
           <hr />
 
-          {/* ΒΗΜΑΤΑ */}
+          {/* Steps */}
           <div>
             <h2 className="text-xl font-bold mb-4">👣 Βήματα</h2>
             <div className="bg-gray-50 p-4 rounded border mb-6">
@@ -382,7 +415,7 @@ export default function CreateRecipe() {
                 <div className="md:col-span-2">
                   <input
                     type="text"
-                    placeholder="Τίτλος Βήματος"
+                    placeholder="Τίτλος"
                     className="w-full border p-2 rounded"
                     value={tempStep.title}
                     onChange={(e) =>
@@ -403,27 +436,25 @@ export default function CreateRecipe() {
                 </div>
               </div>
               <textarea
-                placeholder="Περιγραφή..."
+                placeholder="Περιγραφή"
                 className="w-full border p-2 rounded mb-3 h-20"
                 value={tempStep.description}
                 onChange={(e) =>
                   setTempStep({ ...tempStep, description: e.target.value })
                 }
               />
-
               <input
                 type="text"
-                placeholder="URL Φωτογραφίας Βήματος"
+                placeholder="URL Φωτογραφίας"
                 className="w-full border p-2 rounded mb-3"
                 value={tempStep.photoUrl}
                 onChange={(e) =>
                   setTempStep({ ...tempStep, photoUrl: e.target.value })
                 }
               />
-
               <div className="mb-3">
-                <span className="font-bold text-sm text-gray-600 block mb-2">
-                  Υλικά σε αυτό το βήμα:
+                <span className="font-bold text-sm block mb-2">
+                  Υλικά Βήματος:
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {recipe.ingredients.map((ing, i) => (
@@ -443,13 +474,14 @@ export default function CreateRecipe() {
                   ))}
                 </div>
               </div>
-
               <button
                 type="button"
                 onClick={addStep}
-                className="w-full bg-purple-600 text-white font-bold py-2 rounded"
+                className="w-full bg-orange-600 text-white font-bold py-2 rounded"
               >
-                Προσθήκη Βήματος
+                {tempStep.title
+                  ? "Ενημέρωση/Προσθήκη Βήματος"
+                  : "Προσθήκη Βήματος"}
               </button>
             </div>
 
@@ -459,43 +491,47 @@ export default function CreateRecipe() {
                   key={i}
                   className="border rounded flex overflow-hidden bg-white shadow-sm"
                 >
-                  <div className="bg-purple-100 w-10 flex items-center justify-center font-bold text-purple-700">
-                    {step.stepOrder}
+                  <div className="bg-orange-100 w-10 flex items-center justify-center font-bold text-orange-700">
+                    {i + 1}
                   </div>
-
-                  {/* Εμφάνιση Φωτογραφίας Βήματος (Αν υπάρχει) */}
                   {step.photoUrl && (
                     <div className="w-24 h-24 flex-shrink-0 bg-gray-200">
                       <img
                         src={step.photoUrl}
-                        alt="Step"
+                        alt="step"
                         className="w-full h-full object-cover"
                       />
                     </div>
                   )}
-
                   <div className="p-3 flex-1">
                     <div className="flex justify-between">
                       <h4 className="font-bold">{step.title}</h4>
                       <span className="text-xs bg-gray-200 px-2 py-1 rounded">
-                        {step.duration} λεπτά
+                        {step.duration}'
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 mt-1">
                       {step.description}
                     </p>
-                    <div className="mt-2 text-xs text-gray-500">
-                      {step.selectedIngredients.length > 0 &&
-                        "Υλικά: " + step.selectedIngredients.join(", ")}
-                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeStep(i)}
-                    className="px-4 text-red-500 font-bold hover:bg-red-50"
-                  >
-                    ×
-                  </button>
+
+                  {/* Κουμπιά Edit & Delete */}
+                  <div className="flex flex-col border-l">
+                    <button
+                      type="button"
+                      onClick={() => editStep(i)}
+                      className="px-3 py-2 text-blue-500 hover:bg-blue-50 border-b"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeStep(i)}
+                      className="px-3 py-2 text-red-500 hover:bg-red-50"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -503,9 +539,9 @@ export default function CreateRecipe() {
 
           <button
             type="submit"
-            className="w-full bg-green-600 text-white font-bold py-3 rounded text-lg shadow hover:bg-green-700"
+            className="w-full bg-orange-600 text-white font-bold py-3 rounded text-lg shadow hover:bg-orange-700"
           >
-            💾 Αποθήκευση Συνταγής ({recipe.totalTime} λεπτά)
+            💾 Αποθήκευση Αλλαγών
           </button>
         </form>
       </div>
