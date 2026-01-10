@@ -78,10 +78,15 @@ echo "Starting Docker Compose build and up..."
 $compose_cmd up --build
 exit $?
 
+# shellcheck disable=SC2317
 @echo off
+# shellcheck disable=SC2317
 REM ================= Windows Cmd section =================
+# shellcheck disable=SC2317
 setlocal enabledelayedexpansion
 
+# shellcheck disable=SC2317
+# shellcheck disable=SC1036
 REM Cross-platform start script (Windows Cmd section)
 REM - Prompts for ports
 REM - Writes .env in project root
