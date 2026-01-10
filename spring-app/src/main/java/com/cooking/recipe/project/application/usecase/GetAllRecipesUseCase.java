@@ -1,29 +1,24 @@
 package com.cooking.recipe.project.application.usecase;
 
 import com.cooking.recipe.project.application.dto.RecipeDto;
-import com.cooking.recipe.project.domain.repository.RecipeRepository;
+import com.cooking.recipe.project.domain.service.RecipeDomainService; // <--- ΝΕΟ IMPORT
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GetAllRecipesUseCase {
-    private final RecipeRepository recipeRepository;
+    private final RecipeDomainService recipeDomainService;
 
-    public GetAllRecipesUseCase(RecipeRepository recipeRepository) {
-        this.recipeRepository = recipeRepository;
+    public GetAllRecipesUseCase(RecipeDomainService recipeDomainService) {
+        this.recipeDomainService = recipeDomainService;
     }
 
     public List<RecipeDto> execute() {
-        // TODO: [UNCOMMENT LATER] Waiting for Repository Implementation
-        /*
-        return recipeRepository.findAll().stream()
+        // Καλούμε το findAll του Service και μετατρέπουμε σε DTOs
+        return recipeDomainService.findAll().stream()
                 .map(RecipeDto::new)
                 .collect(Collectors.toList());
-        */
-
-        // Επιστρέφουμε κενή λίστα προσωρινά για να δουλέψει το Frontend
-        return Collections.emptyList();
     }
 }

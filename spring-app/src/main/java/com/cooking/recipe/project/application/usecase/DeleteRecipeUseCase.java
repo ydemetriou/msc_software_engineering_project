@@ -1,18 +1,18 @@
 package com.cooking.recipe.project.application.usecase;
 
-import com.cooking.recipe.project.domain.repository.RecipeRepository;
+import com.cooking.recipe.project.domain.service.RecipeDomainService; // <--- ΝΕΟ IMPORT
 import org.springframework.stereotype.Service;
 
 @Service
 public class DeleteRecipeUseCase {
-    private final RecipeRepository recipeRepository;
+    private final RecipeDomainService recipeDomainService;
 
-    public DeleteRecipeUseCase(RecipeRepository recipeRepository) {
-        this.recipeRepository = recipeRepository;
+    public DeleteRecipeUseCase(RecipeDomainService recipeDomainService) {
+        this.recipeDomainService = recipeDomainService;
     }
 
     public void execute(Long id) {
-// TODO: [UNCOMMENT LATER] Waiting for Repository
-// recipeRepository.deleteById(id);
+        // Διαγραφή μέσω του Service
+        recipeDomainService.delete(id);
     }
 }

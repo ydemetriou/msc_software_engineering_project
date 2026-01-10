@@ -2,25 +2,25 @@ package com.cooking.recipe.project.application.usecase;
 
 import com.cooking.recipe.project.application.dto.RecipeDto;
 import com.cooking.recipe.project.domain.model.Recipe;
-import com.cooking.recipe.project.domain.repository.RecipeRepository;
+import com.cooking.recipe.project.domain.service.RecipeDomainService; // <--- ΝΕΟ IMPORT
 import org.springframework.stereotype.Service;
 
 @Service
 public class GetRecipeUseCase {
-    private final RecipeRepository recipeRepository;
+    private final RecipeDomainService recipeDomainService;
 
-    public GetRecipeUseCase(RecipeRepository recipeRepository) {
-        this.recipeRepository = recipeRepository;
+    public GetRecipeUseCase(RecipeDomainService recipeDomainService) {
+        this.recipeDomainService = recipeDomainService;
     }
 
     public RecipeDto execute(Long id) {
-//        TODO: [UNCOMMENT LATER] Waiting for Repository Implementation
-//        Recipe recipe = recipeRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Recipe not found"));
-//
-//        // Ο Constructor του RecipeDto κάνει όλη τη δύσκολη δουλειά του mapping
-//        return new RecipeDto(recipe);
-        // προσωρινα null για να μην εχω error
-        return null;
+        // Χρήση της μεθόδου του service που φέρνει από τη βάση
+        Recipe recipe = recipeDomainService.createRecipeFromDB(id);
+
+        if (recipe == null) {
+            throw new RuntimeException("Recipe not found");
+        }
+
+        return new RecipeDto(recipe);
     }
 }
