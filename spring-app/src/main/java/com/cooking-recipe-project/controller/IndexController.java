@@ -14,6 +14,7 @@ import com.cooking.recipe.project.domain.service.PhotoDomainService;
 import com.cooking.recipe.project.domain.service.CategoryDomainService;
 import com.cooking.recipe.project.domain.service.IngredientDomainService;
 import com.cooking.recipe.project.domain.service.RecipeDomainService;
+import com.cooking.recipe.project.domain.service.StepDomainService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,53 +30,65 @@ public class IndexController {
     private PhotoDomainService photoService;
     @Autowired
     private RecipeDomainService recipeService;
+    @Autowired
+    private StepDomainService stepService;
 
     @GetMapping({"/",  "/index"})
     public String index() {
-//      Category Service
-//        Category category = categoryService.create("test");
-//        categoryService.save(category);
-//        System.out.println("Category saved with name: " + category.getName());
-//        return category.getName();
-//      Ingredient Service
-//        Ingredient ingredient = ingredientService.create("pepper",10,"kg");
-//        ingredientService.save(ingredient);
-//        System.out.println("Ingredient saved with name: " + ingredient.getName());
-//        return ingredient.getName();
+        // Create Category via service
+        Category category = categoryService.create("Pasta");
 
-//      Photo Service arguments 1st url, 2nd recipe_id, 3rd step_id
-//        Photo photo = photoService.create("test.jpg", 1L,null);
-//        photoService.save(photo);
-//        System.out.println("Photo saved with name: " + photo.getUrl());
-//        return photo.getUrl();
-//
+        // Create recipe-level Photos via service
+        List<Photo> recipePhotos = new ArrayList<>();
+        recipePhotos.add(photoService.create("recipe_photo_1.jpg", null, null));
+        recipePhotos.add(photoService.create("recipe_photo_2.jpg", null, null));
 
-//      Recipe Service
-        Category category = new Category("Zymarika");
+        // Create Steps via service with their own Photos
+        List<Step> steps = new ArrayList<>();
+        List<Photo> step1Photos = new ArrayList<>();
+        step1Photos.add(photoService.create("step1_photo_1.jpg", null, null));
+        Step step1 = stepService.create("Boil water", "Fill a pot with water and bring to a boil.", 10L);
+        step1.setPhotos(step1Photos);
 
-        List<Photo> photos = List.of(
-                new Photo("photo1"),
-                new Photo("photo2")
+        List<Photo> step2Photos = new ArrayList<>();
+        step2Photos.add(photoService.create("step2_photo_1.jpg", null, null));
+        Step step2 = stepService.create("Add pasta", "Add pasta to boiling water and cook.", 8L);
+        step2.setPhotos(step2Photos);
+
+        steps.add(step1);
+        steps.add(step2);
+
+        // Optionally add ingredients via service (empty for now)
+        List<Ingredient> ingredients = new ArrayList<>();
+        // ingredients.add(ingredientService.create("Salt", 1.0, "tsp"));
+
+        // Create the Recipe via the service layer
+        Recipe recipe = recipeService.create(
+                "Test Recipe",
+                category,
+                "Easy",
+                20,
+                recipePhotos,
+                ingredients,
+                steps
         );
 
-        List<Ingredient> ingredients = List.of(
-                new Ingredient("ingredient1"),
-                new Ingredient("ingredient2")
-        );
+        // Optionally save to DB for an end-to-end test:
+        // recipe = recipeService.save(recipe);
 
-        List<Step> steps = List.of(
-                new Step("step1", "step1 description",10L),
-                new Step("step2", "step2 description",10L)
-        );
-
-        Recipe recipe = recipeService.create("συνταγή 1", category, "Εύκολη", 10, photos, ingredients, steps);
-
-
-        recipe = recipeService.save(recipe); // Συνήθως το save επιστρέφει το αποθηκευμένο αντικείμενο (με ID)
-
-        System.out.println("Recipe saved with ID: " + recipe.getId() + " and name: " + recipe.getName());
-        return recipe.getName();
-
+        StringBuilder sb = new StringBuilder();
+        sb.append("Recipe: ").append(recipe.getName()).append("\n");
+        sb.append("Category: ").append(recipe.getCategory().getName()).append("\n");
+        sb.append("Total time: ").append(recipe.getTotalTime()).append(" minutes\n");
+        sb.append("Recipe photos: ").append(recipe.getPhotos() != null ? recipe.getPhotos().size() : 0).append("\n");
+        sb.append("Steps: ").append(recipe.getSteps() != null ? recipe.getSteps().size() : 0).append("\n");
+        for (Step s : recipe.getSteps()) {
+            sb.append(" - ").append(s.getTitle())
+              .append(" (duration ").append(s.getDuration()).append("m)")
+              .append(", photos: ").append(s.getPhotos() != null ? s.getPhotos().size() : 0)
+              .append("\n");
+        }
+        return sb.toString();
     }
 
 }
