@@ -1,5 +1,7 @@
 package com.cooking.recipe.project.domain.model;
 
+import com.cooking.recipe.project.domain.model.enums.Unit;
+
 public class Ingredient {
 
     private Long id;
@@ -8,7 +10,7 @@ public class Ingredient {
 
     private double quantity;
 
-    private String unit;
+    private Unit unit;
 
     public Ingredient() {}
 
@@ -40,10 +42,10 @@ public class Ingredient {
     public void setQuantity(double quantity) {
         this.quantity = quantity;
     }
-    public String getUnit() {
+    public Unit getUnit() {
         return unit;
     }
-    public void setUnit(String unit) {
+    public void setUnit(Unit unit) {
         this.unit = unit;
     }
 }

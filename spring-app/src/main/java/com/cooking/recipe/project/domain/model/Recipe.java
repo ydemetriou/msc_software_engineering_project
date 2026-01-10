@@ -1,6 +1,12 @@
 package com.cooking.recipe.project.domain.model;
 
+import java.util.ArrayList;
 import java.util.List;
+import com.cooking.recipe.project.domain.model.Ingredient;
+import com.cooking.recipe.project.domain.model.Category;
+import com.cooking.recipe.project.domain.model.Photo;
+import com.cooking.recipe.project.domain.model.Step;
+import com.cooking.recipe.project.domain.model.enums.Difficulty;
 
 public class Recipe {
     private Long id;
@@ -9,7 +15,7 @@ public class Recipe {
 
     private Category category;
 
-    private String difficulty;
+    private Difficulty difficulty;
 
     private int totalTime;
 
@@ -20,9 +26,29 @@ public class Recipe {
     private List<Step> steps;
 
     public Recipe(
+            Long id,
             String name,
             Category category,
-            String difficulty,
+            Difficulty difficulty,
+            int totalTime,
+            List<Photo> photos,
+            List<Ingredient> ingredients,
+            List<Step> steps)
+    {
+        this.id = id;
+        this.name = name;
+        this.category = category;
+        this.difficulty = difficulty;
+        this.totalTime = totalTime;
+        this.photos = photos;
+        this.ingredients = ingredients;
+        this.steps = steps;
+    }
+
+    public Recipe(
+            String name,
+            Category category,
+            Difficulty difficulty,
             int totalTime,
             List<Photo> photos,
             List<Ingredient> ingredients,
@@ -107,8 +133,8 @@ public class Recipe {
     public Category getCategory() {return category;}
     public void setCategory(Category category) {this.category = category;}
 
-    public String getDifficulty() {return difficulty;}
-    public void setDifficulty(String difficulty) {this.difficulty = difficulty;}
+    public Difficulty getDifficulty() {return difficulty;}
+    public void setDifficulty(Difficulty difficulty) {this.difficulty = difficulty;}
 
     public int getTotalTime() {return totalTime;}
     public void setTotalTime(int totalTime) {this.totalTime = totalTime;}
