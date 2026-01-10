@@ -13,22 +13,16 @@ public class PhotoDomainService {
     @Autowired
     private JpaPhotoRepository photoRepository;
 
-    public Photo createPhoto(Long photoId) {
+    public Photo createPhotoFromDB(Long photoId) {
         PhotoEntity entity = photoRepository.findById(photoId).orElse(null);
         if (entity == null) return null;
 
         return PhotoMapper.toDomain(entity);
     }
 
-//    public Photo create(String url) {
-//        return new Photo(url);
-//    }
-
     public Photo create(String url,Long recipeId, Long stepId) {
         Photo photo = new Photo();
         photo.setUrl(url);
-        photo.setRecipeId(recipeId);
-        photo.setStepId(stepId);
         return photo;
     }
 

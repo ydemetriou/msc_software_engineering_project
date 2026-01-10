@@ -13,7 +13,7 @@ public class IngredientDomainService {
     @Autowired
     private JpaIngredientRepository ingredientRepository;
 
-    public Ingredient createIngredient(Long ingredientId) {
+    public Ingredient createIngredientFromDB(Long ingredientId) {
         IngredientEntity entity = ingredientRepository.findById(ingredientId).orElse(null);
         if (entity == null) return null;
         return IngredientMapper.toDomain(entity);

@@ -13,7 +13,7 @@ public class CategoryDomainService {
     @Autowired
     private JpaCategoryRepository categoryRepository;
 
-    public Category createCategory(Long categoryId) {
+    public Category createCategoryFromDB(Long categoryId) {
         CategoryEntity entity = categoryRepository.findById(categoryId).orElse(null);
         if (entity == null) return null;
 

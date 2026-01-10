@@ -1,6 +1,7 @@
 package com.cooking.recipe.project.infrastructure.entity;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,11 +15,11 @@ public class StepEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 2000)
     private String description;
 
     @Column
-    private Long duration;
+    private Long duration; // in minutes
 
     @OneToMany(mappedBy = "step", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PhotoEntity> photos;
@@ -27,7 +28,7 @@ public class StepEntity {
     private List<IngredientEntity> ingredients;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipe_id")
+    @JoinColumn(name = "recipe_id", nullable = false)
     private RecipeEntity recipe;
 
     public StepEntity() {
@@ -103,5 +104,18 @@ public class StepEntity {
 
     public void setRecipe(RecipeEntity recipe) {
         this.recipe = recipe;
+    }
+
+    public void addIngredient(IngredientEntity ingredient) {
+        if (ingredient == null) return;
+        if (this.ingredients == null) {
+            this.ingredients = new ArrayList<>();
+        }
+        // set back-references to maintain consistency
+        ingredient.setStep(this);
+        if (this.recipe != null) {
+            ingredient.setRecipe(this.recipe);
+        }
+        this.ingredients.add(ingredient);
     }
 }
