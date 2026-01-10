@@ -1,6 +1,7 @@
 package com.cooking.recipe.project.domain.service;
 
 import com.cooking.recipe.project.domain.model.Ingredient;
+import com.cooking.recipe.project.domain.model.enums.Unit;
 import com.cooking.recipe.project.infrastructure.entity.IngredientEntity;
 import com.cooking.recipe.project.infrastructure.mapper.IngredientMapper;
 import com.cooking.recipe.project.infrastructure.repository.JpaIngredientRepository;
@@ -19,7 +20,7 @@ public class IngredientDomainService {
         return IngredientMapper.toDomain(entity);
     }
 
-    public Ingredient create(String name, double quantity, String unit) {
+    public Ingredient create(String name, double quantity, Unit unit) {
         Ingredient ing = new Ingredient();
         ing.setName(name);
         ing.setQuantity(quantity);

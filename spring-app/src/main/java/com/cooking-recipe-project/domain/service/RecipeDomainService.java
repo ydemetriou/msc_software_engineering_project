@@ -9,6 +9,7 @@ import com.cooking.recipe.project.domain.model.Ingredient;
 import com.cooking.recipe.project.infrastructure.entity.RecipeEntity;
 import com.cooking.recipe.project.infrastructure.repository.JpaRecipeRepository;
 import com.cooking.recipe.project.infrastructure.mapper.RecipeMapper;
+import com.cooking.recipe.project.domain.model.enums.Difficulty;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class RecipeDomainService {
     }
 
     // --- New API ---
-    public Recipe create(String name, Category category, String difficulty, int totalTime,
+    public Recipe create(String name, Category category, Difficulty difficulty, int totalTime,
                          List<Photo> photos, List<Ingredient> ingredients, List<Step> steps) {
         return new Recipe(name, category, difficulty, totalTime, photos, ingredients, steps);
     }

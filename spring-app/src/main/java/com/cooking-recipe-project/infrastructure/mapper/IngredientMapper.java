@@ -1,6 +1,7 @@
 package com.cooking.recipe.project.infrastructure.mapper;
 
 import com.cooking.recipe.project.domain.model.Ingredient;
+import com.cooking.recipe.project.domain.model.enums.Unit;
 import com.cooking.recipe.project.infrastructure.entity.IngredientEntity;
 
 public class IngredientMapper {
@@ -13,7 +14,7 @@ public class IngredientMapper {
         }
         entity.setName(ingredient.getName());
         entity.setQuantity(ingredient.getQuantity());
-        entity.setUnit(ingredient.getUnit());
+        entity.setUnit(ingredient.getUnit() != null ? ingredient.getUnit().name() : null);
         return entity;
     }
 
@@ -25,7 +26,16 @@ public class IngredientMapper {
         if (entity.getQuantity() != null) {
             ingredient.setQuantity(entity.getQuantity());
         }
-        ingredient.setUnit(entity.getUnit());
+        String unitStr = entity.getUnit();
+        if (unitStr != null) {
+            try {
+                ingredient.setUnit(Unit.valueOf(unitStr));
+            } catch (IllegalArgumentException ex) {
+                ingredient.setUnit(null); // fallback if persisted string is unexpected
+            }
+        } else {
+            ingredient.setUnit(null);
+        }
         return ingredient;
     }
 }

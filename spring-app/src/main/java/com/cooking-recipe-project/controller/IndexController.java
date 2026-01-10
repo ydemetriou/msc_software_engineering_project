@@ -10,85 +10,132 @@ import com.cooking.recipe.project.domain.model.Ingredient;
 import com.cooking.recipe.project.domain.model.Recipe;
 import com.cooking.recipe.project.domain.model.Step;
 
-import com.cooking.recipe.project.domain.service.PhotoDomainService;
-import com.cooking.recipe.project.domain.service.CategoryDomainService;
-import com.cooking.recipe.project.domain.service.IngredientDomainService;
 import com.cooking.recipe.project.domain.service.RecipeDomainService;
-import com.cooking.recipe.project.domain.service.StepDomainService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class IndexController {
 
     @Autowired
-    private CategoryDomainService categoryService;
-    @Autowired
-    private IngredientDomainService ingredientService;
-    @Autowired
-    private PhotoDomainService photoService;
-    @Autowired
     private RecipeDomainService recipeService;
-    @Autowired
-    private StepDomainService stepService;
 
     @GetMapping({"/",  "/index"})
     public String index() {
-        // Create Category via service
-        Category category = categoryService.create("Pasta");
-
-        // Create recipe-level Photos via service
-        List<Photo> recipePhotos = new ArrayList<>();
-        recipePhotos.add(photoService.create("recipe_photo_1.jpg", null, null));
-        recipePhotos.add(photoService.create("recipe_photo_2.jpg", null, null));
-
-        // Create Steps via service with their own Photos
-        List<Step> steps = new ArrayList<>();
-        List<Photo> step1Photos = new ArrayList<>();
-        step1Photos.add(photoService.create("step1_photo_1.jpg", null, null));
-        Step step1 = stepService.create("Boil water", "Fill a pot with water and bring to a boil.", 10L);
-        step1.setPhotos(step1Photos);
-
-        List<Photo> step2Photos = new ArrayList<>();
-        step2Photos.add(photoService.create("step2_photo_1.jpg", null, null));
-        Step step2 = stepService.create("Add pasta", "Add pasta to boiling water and cook.", 8L);
-        step2.setPhotos(step2Photos);
-
-        steps.add(step1);
-        steps.add(step2);
-
-        // Optionally add ingredients via service (empty for now)
-        List<Ingredient> ingredients = new ArrayList<>();
-        // ingredients.add(ingredientService.create("Salt", 1.0, "tsp"));
-
-        // Create the Recipe via the service layer
-        Recipe recipe = recipeService.create(
-                "Test Recipe",
-                category,
-                "Easy",
-                20,
-                recipePhotos,
-                ingredients,
-                steps
-        );
-
-        // Optionally save to DB for an end-to-end test:
-        // recipe = recipeService.save(recipe);
+        // Load recipe with id=2 from DB via service
+        Recipe recipe = recipeService.createRecipeFromDB(2L);
+        if (recipe == null) {
+            return "<html><body><p>Recipe with id=2 not found.</p></body></html>";
+        }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Recipe: ").append(recipe.getName()).append("\n");
-        sb.append("Category: ").append(recipe.getCategory().getName()).append("\n");
-        sb.append("Total time: ").append(recipe.getTotalTime()).append(" minutes\n");
-        sb.append("Recipe photos: ").append(recipe.getPhotos() != null ? recipe.getPhotos().size() : 0).append("\n");
-        sb.append("Steps: ").append(recipe.getSteps() != null ? recipe.getSteps().size() : 0).append("\n");
-        for (Step s : recipe.getSteps()) {
-            sb.append(" - ").append(s.getTitle())
-              .append(" (duration ").append(s.getDuration()).append("m)")
-              .append(", photos: ").append(s.getPhotos() != null ? s.getPhotos().size() : 0)
-              .append("\n");
+        sb.append("<html><body>");
+        sb.append("<h1>Recipe: ").append(escape(recipe.getName())).append("</h1>");
+        sb.append("<p><strong>ID:</strong> ").append(recipe.getId()).append("</p>");
+        Category category = recipe.getCategory();
+        sb.append("<p><strong>Category:</strong> ")
+          .append(category != null ? escape(category.getName()) : "-")
+          .append("</p>");
+        sb.append("<p><strong>Difficulty:</strong> ")
+          .append(recipe.getDifficulty() != null ? escape(recipe.getDifficulty().name()) : "-")
+          .append("</p>");
+        sb.append("<p><strong>Total time:</strong> ").append(recipe.getTotalTime()).append(" minutes</p>");
+
+        List<Photo> recipePhotos = recipe.getPhotos();
+        sb.append("<h2>Recipe photos (" ).append(recipePhotos != null ? recipePhotos.size() : 0).append(")</h2>");
+        if (recipePhotos != null && !recipePhotos.isEmpty()) {
+            sb.append("<ul>");
+            for (Photo p : recipePhotos) {
+                sb.append("<li>").append(escape(p.getUrl())).append(" <small>(id=")
+                  .append(p.getId()).append(")</small></li>");
+            }
+            sb.append("</ul>");
+        } else {
+            sb.append("<p><em>No photos</em></p>");
         }
+
+        // Ingredients at recipe level
+        List<Ingredient> ingredients = recipe.getIngredients();
+        sb.append("<h2>Ingredients (" ).append(ingredients != null ? ingredients.size() : 0).append(")</h2>");
+        if (ingredients != null && !ingredients.isEmpty()) {
+            sb.append("<ul>");
+            for (Ingredient ing : ingredients) {
+                String unitStr = ing.getUnit() != null ? ing.getUnit().name() : "-";
+                sb.append("<li>")
+                  .append(escape(ing.getName()))
+                  .append(" ").append(ing.getQuantity()).append(" ").append(escape(unitStr))
+                  .append(" <small>(id=").append(ing.getId()).append(")</small></li>");
+            }
+            sb.append("</ul>");
+        } else {
+            sb.append("<p><em>No ingredients</em></p>");
+        }
+
+        // Steps printing
+        List<Step> steps = recipe.getSteps();
+        sb.append("<h2>Steps (" ).append(steps != null ? steps.size() : 0).append(")</h2>");
+        if (steps != null && !steps.isEmpty()) {
+            sb.append("<ol>");
+            for (Step s : steps) {
+                sb.append("<li><strong>")
+                  .append(escape(s.getTitle()))
+                  .append("</strong> <small>(id=").append(s.getId())
+                  .append(", duration ").append(s.getDuration()).append("m)</small>");
+
+                List<Photo> stepPhotos = s.getPhotos();
+                sb.append("<div><strong>Photos (" )
+                  .append(stepPhotos != null ? stepPhotos.size() : 0)
+                  .append(")</strong></div>");
+                if (stepPhotos != null && !stepPhotos.isEmpty()) {
+                    sb.append("<ul>");
+                    for (Photo sp : stepPhotos) {
+                        sb.append("<li>").append(escape(sp.getUrl()))
+                          .append(" <small>(id=").append(sp.getId()).append(")</small></li>");
+                    }
+                    sb.append("</ul>");
+                } else {
+                    sb.append("<p><em>No step photos</em></p>");
+                }
+
+                // Step ingredients
+                List<Ingredient> stepIngs = s.getIngredients();
+                sb.append("<div><strong>Ingredients (" )
+                  .append(stepIngs != null ? stepIngs.size() : 0)
+                  .append(")</strong></div>");
+                if (stepIngs != null && !stepIngs.isEmpty()) {
+                    sb.append("<ul>");
+                    for (Ingredient si : stepIngs) {
+                        String sUnitStr = si.getUnit() != null ? si.getUnit().name() : "-";
+                        sb.append("<li>")
+                          .append(escape(si.getName()))
+                          .append(" ").append(si.getQuantity()).append(" ").append(escape(sUnitStr))
+                          .append(" <small>(id=").append(si.getId()).append(")</small></li>");
+                    }
+                    sb.append("</ul>");
+                } else {
+                    sb.append("<p><em>No step ingredients</em></p>");
+                }
+
+                sb.append("</li>");
+            }
+            sb.append("</ol>");
+        } else {
+            sb.append("<p><em>No steps</em></p>");
+        }
+
+        sb.append("</body></html>");
         return sb.toString();
+    }
+
+    // Basic HTML escape to avoid broken markup
+    private String escape(String s) {
+        if (s == null) return "";
+        return s
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&#39;");
     }
 
 }

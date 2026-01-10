@@ -5,6 +5,7 @@ import com.cooking.recipe.project.domain.model.Ingredient;
 import com.cooking.recipe.project.domain.model.Photo;
 import com.cooking.recipe.project.domain.model.Recipe;
 import com.cooking.recipe.project.domain.model.Step;
+import com.cooking.recipe.project.domain.model.enums.Difficulty;
 import com.cooking.recipe.project.infrastructure.entity.PhotoEntity;
 import com.cooking.recipe.project.infrastructure.entity.RecipeEntity;
 
@@ -19,7 +20,15 @@ public class RecipeMapper {
 
         String name = entity.getName();
         Category category = CategoryMapper.toDomain(entity.getCategory());
-        String difficulty = entity.getDifficulty();
+        Difficulty difficulty = null;
+        String diffStr = entity.getDifficulty();
+        if (diffStr != null) {
+            try {
+                difficulty = Difficulty.valueOf(diffStr);
+            } catch (IllegalArgumentException ex) {
+                difficulty = null;
+            }
+        }
         int totalTime = entity.getTotalTime();
 
         List<Photo> photos = new ArrayList<>();
@@ -44,6 +53,7 @@ public class RecipeMapper {
         }
 
         return new Recipe(
+                entity.getId(),
                 name,
                 category,
                 difficulty,
@@ -62,7 +72,7 @@ public class RecipeMapper {
         }
         entity.setName(recipe.getName());
         entity.setCategory(CategoryMapper.toEntity(recipe.getCategory()));
-        entity.setDifficulty(recipe.getDifficulty());
+        entity.setDifficulty(recipe.getDifficulty() != null ? recipe.getDifficulty().name() : null);
         entity.setTotalTime(recipe.getTotalTime());
 
         // Photos
