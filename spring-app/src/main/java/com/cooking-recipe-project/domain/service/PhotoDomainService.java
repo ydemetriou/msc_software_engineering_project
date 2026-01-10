@@ -23,8 +23,6 @@ public class PhotoDomainService {
     public Photo create(String url,Long recipeId, Long stepId) {
         Photo photo = new Photo();
         photo.setUrl(url);
-        photo.setRecipeId(recipeId);
-        photo.setStepId(stepId);
         return photo;
     }
 

@@ -19,7 +19,7 @@ public class StepMapper {
         } else {
             entity = new StepEntity(step.getTitle(), step.getDescription(), step.getDuration());
         }
-        // Map ingredients and set back-reference
+        // Do not map domain order; persistence order is managed by RecipeEntity @OrderColumn
         if (step.getIngredients() != null) {
             List<IngredientEntity> ies = step.getIngredients().stream()
                     .map(IngredientMapper::toEntity)
@@ -39,6 +39,7 @@ public class StepMapper {
         if (entity == null) return null;
         Step step = new Step(entity.getTitle(), entity.getDescription(), entity.getDuration());
         step.setId(entity.getId());
+        // Do not set order on domain; ordering is by list position in Recipe.steps
         if (entity.getIngredients() != null) {
             List<Ingredient> ings = entity.getIngredients().stream()
                     .map(IngredientMapper::toDomain)
