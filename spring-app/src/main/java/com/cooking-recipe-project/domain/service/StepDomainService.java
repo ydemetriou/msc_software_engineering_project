@@ -13,7 +13,7 @@ public class StepDomainService {
     @Autowired
     private JpaStepRepository stepRepository;
 
-    public Step createStep(Long stepId) {
+    public Step createStepFromDB(Long stepId) {
         StepEntity entity = stepRepository.findById(stepId).orElse(null);
         if (entity == null) return null;
 

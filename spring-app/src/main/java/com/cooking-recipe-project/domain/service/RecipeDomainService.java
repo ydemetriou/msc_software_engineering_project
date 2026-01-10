@@ -18,7 +18,7 @@ public class RecipeDomainService {
     @Autowired
     private JpaRecipeRepository recipeRepository;
 
-    public Recipe createRecipe(Long recipeId) {
+    public Recipe createRecipeFromDB(Long recipeId) {
         RecipeEntity entity = recipeRepository.findById(recipeId).orElse(null);
         if (entity == null) return null;
 

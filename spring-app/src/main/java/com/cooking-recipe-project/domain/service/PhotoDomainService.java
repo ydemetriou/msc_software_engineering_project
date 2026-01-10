@@ -13,7 +13,7 @@ public class PhotoDomainService {
     @Autowired
     private JpaPhotoRepository photoRepository;
 
-    public Photo createPhoto(Long photoId) {
+    public Photo createPhotoFromDB(Long photoId) {
         PhotoEntity entity = photoRepository.findById(photoId).orElse(null);
         if (entity == null) return null;
 
