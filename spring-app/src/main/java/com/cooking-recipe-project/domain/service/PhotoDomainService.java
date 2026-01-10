@@ -20,8 +20,16 @@ public class PhotoDomainService {
         return PhotoMapper.toDomain(entity);
     }
 
-    public Photo create(String url) {
-        return new Photo(url);
+//    public Photo create(String url) {
+//        return new Photo(url);
+//    }
+
+    public Photo create(String url,Long recipeId, Long stepId) {
+        Photo photo = new Photo();
+        photo.setUrl(url);
+        photo.setRecipeId(recipeId);
+        photo.setStepId(stepId);
+        return photo;
     }
 
     public Photo save(Photo photo) {
