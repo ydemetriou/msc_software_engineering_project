@@ -1,4 +1,5 @@
 package com.cooking.recipe.project.domain.service;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.cooking.recipe.project.domain.model.Recipe;
@@ -45,5 +46,10 @@ public class RecipeDomainService {
 
     public void delete(Long id) {
         if (id != null) recipeRepository.deleteById(id);
+    }
+    public List<Recipe> findAll() {
+        return recipeRepository.findAll().stream()
+                .map(RecipeMapper::toDomain)
+                .collect(Collectors.toList());
     }
 }

@@ -6,6 +6,8 @@ import com.cooking.recipe.project.infrastructure.mapper.CategoryMapper;
 import com.cooking.recipe.project.infrastructure.repository.JpaCategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryDomainService {
@@ -38,5 +40,17 @@ public class CategoryDomainService {
 
     public void delete(Long id) {
         if (id != null) categoryRepository.deleteById(id);
+    }
+
+    public List<Category> findAll() {
+        return categoryRepository.findAll().stream()
+                .map(CategoryMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    public Category findByName(String name) {
+        return categoryRepository.findByName(name)
+                .map(CategoryMapper::toDomain)
+                .orElse(null);
     }
 }
