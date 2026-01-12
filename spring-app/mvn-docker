@@ -13,11 +13,14 @@ fi
 
 # Run Maven in Docker mounting the project root and pointing to the module's pom
 # Working directory: project root; POM: spring-app/pom.xml
+# Run as current user to avoid permission issues in .m2
 docker run --rm \
+  --user "$(id -u):$(id -g)" \
   -v "$PROJECT_ROOT:/workspace" \
-  -v "$HOME/.m2:/root/.m2" \
+  -v "$HOME/.m2:/var/maven/.m2" \
+  -e MAVEN_CONFIG=/var/maven/.m2 \
   -w /workspace \
-  "$IMAGE" mvn -f spring-app/pom.xml "$@"
+  "$IMAGE" mvn -Duser.home=/var/maven -f spring-app/pom.xml "$@"
 exit $?
 
 :; exec sh "$0" "$@"
