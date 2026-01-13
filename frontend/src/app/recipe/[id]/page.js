@@ -162,7 +162,16 @@ export default function RecipeDetails({ params: paramsPromise }) {
                   <p className="text-gray-700 mb-4 whitespace-pre-wrap">
                     {step.description}
                   </p>
-
+                  {step.photoUrls && step.photoUrls.length > 0 && (
+                    <div className="mb-4 mt-2">
+                      <img
+                        // Παίρνουμε το url είτε από το photos[0].url είτε απευθείας (για συμβατότητα)
+                        src={step.photoUrls[0].url || step.photoUrls[0]}
+                        alt={`Step ${i + 1}`}
+                        className="rounded-lg max-h-64 object-cover border border-gray-200 shadow-sm"
+                      />
+                    </div>
+                  )}
                   {/* Φωτογραφία Βήματος */}
                   {step.photoUrls && step.photoUrls.length > 0 && (
                     <div className="mb-4">

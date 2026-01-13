@@ -10,7 +10,10 @@ public class PhotoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    // @Column(nullable = false)
+    // private String url;
+    @Lob // Λέει στη Java ότι είναι μεγάλο αντικείμενο
+    @Column(nullable = false, columnDefinition = "LONGTEXT") // Λέει στη MySQL να κρατήσει πολύ χώρο
     private String url;
 
     @ManyToOne(fetch = FetchType.LAZY)

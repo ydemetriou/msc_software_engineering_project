@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   mysql:
     image: mysql:8.0
@@ -26,6 +28,17 @@ services:
     env_file:
       - .env
 
+  frontend:
+    build: ./frontend
+    container_name: next-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - spring-app
+    environment:
+      - NEXT_APP_API_URL=http://spring-app:8080
+
+  # 4. phpMyAdmin
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin

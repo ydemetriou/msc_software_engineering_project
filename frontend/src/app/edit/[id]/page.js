@@ -28,7 +28,7 @@ export default function EditRecipe({ params: paramsPromise }) {
   // Form State
   const [recipe, setRecipe] = useState({
     name: "",
-    category: "", // Θα αρχικοποιηθεί σωστά παρακάτω
+    category: "",
     difficulty: "",
     totalTime: 0,
     mainPhotoUrl: "",
@@ -41,6 +41,7 @@ export default function EditRecipe({ params: paramsPromise }) {
     quantity: "",
     unit: "",
   });
+
   const [tempStep, setTempStep] = useState({
     title: "",
     description: "",
@@ -48,6 +49,33 @@ export default function EditRecipe({ params: paramsPromise }) {
     photoUrl: "",
     selectedIngredients: [],
   });
+  const [editingStepIndex, setEditingStepIndex] = useState(null);
+
+  // ---  Upload Αρχείου (Base64) ---
+  const handleFileUpload = (e, targetField, isStep = false) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Έλεγχος μεγέθους (π.χ. 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert(
+        "Το αρχείο είναι πολύ μεγάλο! Παρακαλώ επιλέξτε εικόνα μικρότερη από 2MB."
+      );
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      if (isStep) {
+        setTempStep((prev) => ({ ...prev, [targetField]: base64String }));
+      } else {
+        setRecipe((prev) => ({ ...prev, [targetField]: base64String }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  // ---------------------------------------------
 
   // 1. Fetch Data
   useEffect(() => {
@@ -74,7 +102,6 @@ export default function EditRecipe({ params: paramsPromise }) {
         // Populate Form with existing data
         setRecipe({
           name: recipeData.name || "",
-          // Ασφάλεια για το Select Error: Αν είναι null, βάλε κενό ή το πρώτο της λίστας
           category: recipeData.category || catData[0] || "",
           difficulty: recipeData.difficulty || diffData[0] || "",
           totalTime: recipeData.totalTime || 0,
@@ -91,7 +118,6 @@ export default function EditRecipe({ params: paramsPromise }) {
             description: s.description,
             duration: s.duration,
             photoUrl: s.photoUrls?.[0] || "",
-            // Εδώ κάνουμε map τα υλικά του βήματος πίσω σε ονόματα για τα checkboxes
             selectedIngredients: s.ingredients
               ? s.ingredients.map((i) => i.name)
               : [],
@@ -124,21 +150,17 @@ export default function EditRecipe({ params: paramsPromise }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation για τον χρόνο
     const calculatedTime = recipe.steps.reduce(
       (sum, step) => sum + parseInt(step.duration || 0),
       0
     );
-    if (calculatedTime !== recipe.totalTime) {
-      // Force update to match logic
-      setRecipe((prev) => ({ ...prev, totalTime: calculatedTime }));
-    }
 
+    // Payload
     const payload = {
       name: recipe.name,
       category: recipe.category,
       difficulty: recipe.difficulty,
-      totalTime: calculatedTime, // Στέλνουμε το υπολογισμένο
+      totalTime: calculatedTime,
       photoUrls: recipe.mainPhotoUrl ? [recipe.mainPhotoUrl] : [],
       ingredients: recipe.ingredients.map((ing) => ({
         name: ing.name,
@@ -210,10 +232,28 @@ export default function EditRecipe({ params: paramsPromise }) {
       alert("Συμπλήρωσε τίτλο και διάρκεια!");
       return;
     }
-    setRecipe((prev) => ({
-      ...prev,
-      steps: [...prev.steps, { ...tempStep, stepOrder: prev.steps.length + 1 }],
-    }));
+
+    setRecipe((prev) => {
+      let updatedSteps = [...prev.steps];
+
+      if (editingStepIndex !== null) {
+        // --- LOGIC ΓΙΑ UPDATE ΥΠΑΡΧΟΝΤΟΣ ---
+        updatedSteps[editingStepIndex] = {
+          ...tempStep,
+          stepOrder: editingStepIndex + 1, // Κρατάμε τη σωστή σειρά
+        };
+      } else {
+        // --- LOGIC ΓΙΑ ΠΡΟΣΘΗΚΗ ΝΕΟΥ ---
+        updatedSteps.push({
+          ...tempStep,
+          stepOrder: updatedSteps.length + 1,
+        });
+      }
+
+      return { ...prev, steps: updatedSteps };
+    });
+
+    // Καθαρισμός φόρμας και reset του index
     setTempStep({
       title: "",
       description: "",
@@ -221,9 +261,9 @@ export default function EditRecipe({ params: paramsPromise }) {
       photoUrl: "",
       selectedIngredients: [],
     });
+    setEditingStepIndex(null); // Επιστροφή σε λειτουργία "Προσθήκης"
   };
 
-  // --- ΝΕΑ ΛΕΙΤΟΥΡΓΙΑ: EDIT STEP ---
   const editStep = (idx) => {
     const stepToEdit = recipe.steps[idx];
     // Φορτώνουμε τα δεδομένα στη φόρμα
@@ -231,13 +271,12 @@ export default function EditRecipe({ params: paramsPromise }) {
       title: stepToEdit.title,
       description: stepToEdit.description,
       duration: stepToEdit.duration,
-      photoUrl: stepToEdit.photoUrl,
-      selectedIngredients: stepToEdit.selectedIngredients,
+      photoUrl: stepToEdit.photoUrl || "",
+      selectedIngredients: stepToEdit.selectedIngredients || [],
     });
-    // Αφαιρούμε το βήμα από τη λίστα (ο χρήστης θα το ξαναπροσθέσει πατώντας "Προσθήκη")
-    removeStep(idx);
+    // Σημειώνουμε ποιο index επεξεργαζόμαστε
+    setEditingStepIndex(idx);
   };
-  // ---------------------------------
 
   const removeStep = (idx) => {
     setRecipe((prev) => ({
@@ -281,17 +320,39 @@ export default function EditRecipe({ params: paramsPromise }) {
                 onChange={(e) => setRecipe({ ...recipe, name: e.target.value })}
               />
             </div>
+
+            {/* --- File Input για Κεντρική Φωτογραφία --- */}
             <div>
-              <label className="block font-bold mb-1">Φωτογραφία URL</label>
+              <label className="block font-bold mb-1">
+                Κεντρική Φωτογραφία
+              </label>
               <input
-                type="text"
-                className="w-full border p-2 rounded"
-                value={recipe.mainPhotoUrl}
-                onChange={(e) =>
-                  setRecipe({ ...recipe, mainPhotoUrl: e.target.value })
-                }
+                type="file"
+                accept="image/*"
+                className="w-full border p-2 rounded bg-gray-50"
+                onChange={(e) => handleFileUpload(e, "mainPhotoUrl", false)}
               />
+              {/* Preview */}
+              {recipe.mainPhotoUrl && (
+                <div className="mt-2 w-20 h-20 border rounded overflow-hidden relative group">
+                  <img
+                    src={recipe.mainPhotoUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Κουμπί αφαίρεσης φωτο αν θέλουμε (προαιρετικό) */}
+                  <button
+                    type="button"
+                    className="absolute top-0 right-0 bg-red-600 text-white text-xs p-1 opacity-0 group-hover:opacity-100 transition"
+                    onClick={() => setRecipe({ ...recipe, mainPhotoUrl: "" })}
+                  >
+                    X
+                  </button>
+                </div>
+              )}
             </div>
+            {/* ----------------------------------------------- */}
+
             <div>
               <label className="block font-bold mb-1">Κατηγορία</label>
               <select
@@ -444,15 +505,30 @@ export default function EditRecipe({ params: paramsPromise }) {
                   setTempStep({ ...tempStep, description: e.target.value })
                 }
               />
-              <input
-                type="text"
-                placeholder="URL Φωτογραφίας"
-                className="w-full border p-2 rounded mb-3"
-                value={tempStep.photoUrl}
-                onChange={(e) =>
-                  setTempStep({ ...tempStep, photoUrl: e.target.value })
-                }
-              />
+
+              {/* --- File Input για Φωτογραφία Βήματος --- */}
+              <div className="mb-3">
+                <label className="block text-sm font-bold text-gray-600 mb-1">
+                  Φωτογραφία Βήματος
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="w-full border p-2 rounded bg-white"
+                  onChange={(e) => handleFileUpload(e, "photoUrl", true)}
+                />
+                {tempStep.photoUrl && (
+                  <div className="mt-2 w-16 h-16 border rounded overflow-hidden">
+                    <img
+                      src={tempStep.photoUrl}
+                      alt="Step Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+              {/* ------------------------------------------------ */}
+
               <div className="mb-3">
                 <span className="font-bold text-sm block mb-2">
                   Υλικά Βήματος:
@@ -475,15 +551,42 @@ export default function EditRecipe({ params: paramsPromise }) {
                   ))}
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={addStep}
-                className="w-full bg-orange-600 text-white font-bold py-2 rounded"
-              >
-                {tempStep.title
-                  ? "Ενημέρωση/Προσθήκη Βήματος"
-                  : "Προσθήκη Βήματος"}
-              </button>
+              {/* Κουμπιά Action για τα Βήματα - ΝΕΟΣ ΚΩΔΙΚΑΣ */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={addStep}
+                  className={`flex-1 font-bold py-2 rounded text-white ${
+                    editingStepIndex !== null
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "bg-orange-600 hover:bg-orange-700"
+                  }`}
+                >
+                  {editingStepIndex !== null
+                    ? "💾 Ενημέρωση Βήματος"
+                    : "➕ Προσθήκη Βήματος"}
+                </button>
+
+                {/* Κουμπί Ακύρωσης (εμφανίζεται μόνο όταν κάνουμε Edit) */}
+                {editingStepIndex !== null && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingStepIndex(null);
+                      setTempStep({
+                        title: "",
+                        description: "",
+                        duration: "",
+                        photoUrl: "",
+                        selectedIngredients: [],
+                      });
+                    }}
+                    className="bg-gray-400 text-white px-4 rounded hover:bg-gray-500 font-bold"
+                  >
+                    Ακύρωση
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">

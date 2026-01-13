@@ -129,11 +129,11 @@ export default function RunRecipe({ params: paramsPromise }) {
 
         {/* Φωτογραφία Βήματος */}
         {currentStep.photoUrls && currentStep.photoUrls.length > 0 && (
-          <div className="mb-6 rounded-xl overflow-hidden shadow-2xl border border-gray-700 bg-black">
+          <div className="mb-6 rounded-xl overflow-hidden shadow-2xl border border-gray-700 bg-black flex justify-center">
             <img
-              src={currentStep.photoUrls[0]}
-              alt="Step"
-              className="w-full h-auto object-contain max-h-80 mx-auto"
+              src={currentStep.photoUrls[0].url || currentStep.photoUrls[0]}
+              alt="Step Visualization"
+              className="max-h-80 object-contain"
             />
           </div>
         )}

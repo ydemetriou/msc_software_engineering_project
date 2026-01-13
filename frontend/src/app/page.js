@@ -99,14 +99,14 @@ export default function Home() {
                 📊 Δυσκολία:{" "}
                 <span
                   className={
-                    recipe.difficulty === "EASY"
+                    (recipe.difficulty || "").toUpperCase() === "EASY"
                       ? "text-green-600"
-                      : recipe.difficulty === "MEDIUM"
+                      : (recipe.difficulty || "").toUpperCase() === "MEDIUM"
                         ? "text-orange-500"
                         : "text-red-600"
                   }
                 >
-                  {recipe.difficulty}
+                  {recipe.difficulty || "Μη ορισμένο"}
                 </span>
               </p>
 

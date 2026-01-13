@@ -19,8 +19,8 @@ export default function CreateRecipe() {
     name: "",
     category: "",
     difficulty: "",
-    totalTime: 0, // Αυτό πλέον θα υπολογίζεται αυτόματα
-    mainPhotoUrl: "", // ΝΕΟ: Κεντρική Φωτογραφία
+    totalTime: 0,
+    mainPhotoUrl: "", // Εδώ θα μπει το Base64 string της εικόνας
     ingredients: [],
     steps: [],
   });
@@ -36,9 +36,34 @@ export default function CreateRecipe() {
     title: "",
     description: "",
     duration: "",
-    photoUrl: "",
+    photoUrl: "", // Εδώ θα μπει το Base64 string της εικόνας βήματος
     selectedIngredients: [],
   });
+
+  // --- Συνάρτηση μετατροπής αρχείου σε Base64 ---
+  const handleFileUpload = (e, targetField, isStep = false) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Έλεγχος μεγέθους (π.χ. όριο 2MB για να μην "σκάσει" η βάση)
+    if (file.size > 2 * 1024 * 1024) {
+      alert(
+        "Το αρχείο είναι πολύ μεγάλο! Παρακαλώ επιλέξτε εικόνα μικρότερη από 2MB."
+      );
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      if (isStep) {
+        setTempStep((prev) => ({ ...prev, [targetField]: base64String }));
+      } else {
+        setRecipe((prev) => ({ ...prev, [targetField]: base64String }));
+      }
+    };
+    reader.readAsDataURL(file); // Μετατροπή σε μορφή κατάλληλη για <img> src
+  };
 
   // 1. Fetch Lists & Initial Setup
   useEffect(() => {
@@ -74,8 +99,7 @@ export default function CreateRecipe() {
     fetchData();
   }, []);
 
-  // 2. ΑΥΤΟΜΑΤΟΣ ΥΠΟΛΟΓΙΣΜΟΣ ΧΡΟΝΟΥ
-  // Κάθε φορά που αλλάζουν τα steps, ξαναμετράμε τον χρόνο
+  // 2. Auto Calc Time
   useEffect(() => {
     const total = recipe.steps.reduce(
       (sum, step) => sum + parseInt(step.duration || 0),
@@ -98,17 +122,13 @@ export default function CreateRecipe() {
       category: recipe.category,
       difficulty: recipe.difficulty,
       totalTime: recipe.totalTime,
-      // Στέλνουμε την κεντρική φωτο σε λίστα (όπως θέλει το backend)
       photoUrls: recipe.mainPhotoUrl ? [recipe.mainPhotoUrl] : [],
-
       ingredients: recipe.ingredients.map((ing) => ({
         name: ing.name,
         quantity: parseFloat(ing.quantity),
         unit: ing.unit,
       })),
-
       steps: recipe.steps.map((step) => {
-        // Βρίσκουμε τα πλήρη αντικείμενα των επιλεγμένων υλικών
         const stepIngredientsObjects = recipe.ingredients
           .filter((ing) => step.selectedIngredients.includes(ing.name))
           .map((ing) => ({
@@ -121,7 +141,6 @@ export default function CreateRecipe() {
           title: step.title,
           description: step.description,
           duration: parseInt(step.duration),
-          // Στέλνουμε τη φωτο βήματος
           photoUrls: step.photoUrl ? [step.photoUrl] : [],
           ingredients: stepIngredientsObjects,
         };
@@ -139,7 +158,6 @@ export default function CreateRecipe() {
         alert("Επιτυχία!");
         router.push("/");
       } else {
-        // Εδώ θα εμφανιστεί το μήνυμα λάθους από το Backend αν οι χρόνοι δεν ταιριάζουν
         const errorData = await res.json();
         alert("Σφάλμα: " + (errorData.message || "Κάτι πήγε στραβά"));
       }
@@ -148,7 +166,7 @@ export default function CreateRecipe() {
     }
   };
 
-  // Helper Functions (Add/Remove)
+  // Helper Functions
   const addIngredient = () => {
     if (!tempIngredient.name || !tempIngredient.quantity) return;
     setRecipe((prev) => ({
@@ -163,7 +181,6 @@ export default function CreateRecipe() {
     setRecipe((prev) => ({
       ...prev,
       ingredients: prev.ingredients.filter((_, i) => i !== idx),
-      // Καθαρισμός και από τα βήματα
       steps: prev.steps.map((s) => ({
         ...s,
         selectedIngredients: s.selectedIngredients.filter((n) => n !== ingName),
@@ -233,21 +250,29 @@ export default function CreateRecipe() {
               />
             </div>
 
-            {/* ΝΕΟ: Κεντρική Φωτογραφία */}
+            {/* --- File Input για Κεντρική Φωτογραφία --- */}
             <div>
               <label className="block font-bold mb-1">
-                URL Κεντρικής Φωτογραφίας
+                Κεντρική Φωτογραφία
               </label>
               <input
-                type="text"
-                className="w-full border p-2 rounded"
-                placeholder="https://..."
-                value={recipe.mainPhotoUrl}
-                onChange={(e) =>
-                  setRecipe({ ...recipe, mainPhotoUrl: e.target.value })
-                }
+                type="file"
+                accept="image/*"
+                className="w-full border p-2 rounded bg-gray-50"
+                onChange={(e) => handleFileUpload(e, "mainPhotoUrl", false)}
               />
+              {/* Προεπισκόπηση */}
+              {recipe.mainPhotoUrl && (
+                <div className="mt-2 w-20 h-20 border rounded overflow-hidden">
+                  <img
+                    src={recipe.mainPhotoUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
             </div>
+            {/* ----------------------------------------------- */}
 
             <div>
               <label className="block font-bold mb-1">Κατηγορία</label>
@@ -283,7 +308,6 @@ export default function CreateRecipe() {
               </select>
             </div>
 
-            {/* READ-ONLY TOTAL TIME */}
             <div className="md:col-span-2">
               <label className="block font-bold mb-1">
                 Συνολικός Χρόνος (Αυτόματος)
@@ -304,7 +328,7 @@ export default function CreateRecipe() {
 
           <hr />
 
-          {/* ΥΛΙΚΑ */}
+          {/* ΥΛΙΚΑ (ΙΔΙΟ ΚΩΔΙΚΑΣ) */}
           <div>
             <h2 className="text-xl font-bold mb-4">🛒 Υλικά</h2>
             <div className="flex gap-2 mb-4">
@@ -412,15 +436,28 @@ export default function CreateRecipe() {
                 }
               />
 
-              <input
-                type="text"
-                placeholder="URL Φωτογραφίας Βήματος"
-                className="w-full border p-2 rounded mb-3"
-                value={tempStep.photoUrl}
-                onChange={(e) =>
-                  setTempStep({ ...tempStep, photoUrl: e.target.value })
-                }
-              />
+              {/* --- File Input για Φωτογραφία Βήματος --- */}
+              <div className="mb-3">
+                <label className="block text-sm font-bold text-gray-600 mb-1">
+                  Φωτογραφία Βήματος
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="w-full border p-2 rounded bg-white"
+                  onChange={(e) => handleFileUpload(e, "photoUrl", true)}
+                />
+                {tempStep.photoUrl && (
+                  <div className="mt-2 w-16 h-16 border rounded overflow-hidden">
+                    <img
+                      src={tempStep.photoUrl}
+                      alt="Step Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+              {/* ------------------------------------------------ */}
 
               <div className="mb-3">
                 <span className="font-bold text-sm text-gray-600 block mb-2">
@@ -464,7 +501,6 @@ export default function CreateRecipe() {
                     {step.stepOrder}
                   </div>
 
-                  {/* Εμφάνιση Φωτογραφίας Βήματος (Αν υπάρχει) */}
                   {step.photoUrl && (
                     <div className="w-24 h-24 flex-shrink-0 bg-gray-200">
                       <img
