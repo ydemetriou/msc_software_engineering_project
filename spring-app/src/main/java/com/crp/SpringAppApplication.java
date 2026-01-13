@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:spring-app/src/main/java/com/cooking/recipe/project/SpringAppApplication.java
-package com.cooking.recipe.project;
-========
 package com.crp;
->>>>>>>> origin/main:spring-app/src/main/java/com/crp/SpringAppApplication.java
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

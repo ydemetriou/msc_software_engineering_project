@@ -1,0 +1,45 @@
+#!/usr/bin/env sh
+set -e
+IMAGE="maven:3.9.6-eclipse-temurin-17"
+
+# Resolve the directory of this script (spring-app) and project root
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+
+# Resolve HOME if missing
+if [ -z "$HOME" ]; then
+  HOME=$(getent passwd "$(id -u)" | cut -d: -f6 2>/dev/null || echo "$HOME")
+fi
+
+# Run Maven in Docker mounting the project root and pointing to the module's pom
+# Working directory: project root; POM: spring-app/pom.xml
+# Run as current user to avoid permission issues in .m2
+docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  -v "$PROJECT_ROOT:/workspace" \
+  -v "$HOME/.m2:/var/maven/.m2" \
+  -e MAVEN_CONFIG=/var/maven/.m2 \
+  -w /workspace \
+  "$IMAGE" mvn -Duser.home=/var/maven -f spring-app/pom.xml "$@"
+exit $?
+
+:; exec sh "$0" "$@"
+@echo off
+REM ================= Windows Cmd section =================
+setlocal enabledelayedexpansion
+set IMAGE=maven:3.9.6-eclipse-temurin-17
+
+REM Resolve script dir and project root
+set SCRIPT_DIR=%~dp0
+for %%I in ("%SCRIPT_DIR%..") do set PROJECT_ROOT=%%~fI
+
+REM Run Maven in Docker mounting project root and pointing to the module POM
+REM Working dir: /workspace; POM: spring-app/pom.xml
+
+docker run --rm ^
+  -v "%PROJECT_ROOT%:/workspace" ^
+  -v "%USERPROFILE%\.m2:/root/.m2" ^
+  -w /workspace ^
+  %IMAGE% mvn -f spring-app/pom.xml %*
+
+exit /b %errorlevel%

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import API_BASE_URL from "@/config/api";
 
 export default function RunRecipe({ params: paramsPromise }) {
   const [id, setId] = useState(null);
@@ -18,7 +19,7 @@ export default function RunRecipe({ params: paramsPromise }) {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`http://localhost:8081/api/recipes/${id}`)
+    fetch(`${API_BASE_URL}/api/recipes/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setRecipe(data);

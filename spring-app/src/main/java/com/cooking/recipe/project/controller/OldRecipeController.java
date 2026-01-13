@@ -11,12 +11,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/recipes") // Όλα τα URLs θα ξεκινάνε με /api/recipes
 @CrossOrigin(origins = "http://localhost:3000") // <--- ΓΙΑ ΤΟΠΙΚΟ PORT
-public class RecipeController {
+public class OldRecipeController {
 
     private final RecipeService recipeService;
 
     @Autowired
-    public RecipeController(RecipeService recipeService) {
+    public OldRecipeController(RecipeService recipeService) {
         this.recipeService = recipeService;
     }
 

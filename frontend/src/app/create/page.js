@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import API_BASE_URL from "@/config/api";
 
 export default function CreateRecipe() {
   const router = useRouter();
@@ -44,9 +45,9 @@ export default function CreateRecipe() {
     const fetchData = async () => {
       try {
         const [catRes, unitRes, diffRes] = await Promise.all([
-          fetch("http://localhost:8081/api/references/categories"),
-          fetch("http://localhost:8081/api/references/units"),
-          fetch("http://localhost:8081/api/references/difficulties"),
+          fetch(`${API_BASE_URL}/api/references/categories`),
+          fetch(`${API_BASE_URL}/api/references/units`),
+          fetch(`${API_BASE_URL}/api/references/difficulties`),
         ]);
 
         const catData = await catRes.json();
@@ -128,7 +129,7 @@ export default function CreateRecipe() {
     };
 
     try {
-      const res = await fetch("http://localhost:8081/api/recipes", {
+      const res = await fetch(`${API_BASE_URL}/api/recipes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

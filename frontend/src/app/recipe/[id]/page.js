@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import API_BASE_URL from "@/config/api";
 
 export default function RecipeDetails({ params: paramsPromise }) {
   const [id, setId] = useState(null);
@@ -24,7 +25,7 @@ export default function RecipeDetails({ params: paramsPromise }) {
 
     const fetchRecipe = async () => {
       try {
-        const res = await fetch(`http://localhost:8081/api/recipes/${id}`);
+        const res = await fetch(`${API_BASE_URL}/api/recipes/${id}`);
         if (!res.ok) throw new Error("Recipe not found");
         const data = await res.json();
         setRecipe(data);
@@ -43,7 +44,7 @@ export default function RecipeDetails({ params: paramsPromise }) {
     if (!confirm("Είσαι σίγουρος ότι θες να διαγράψεις τη συνταγή;")) return;
 
     try {
-      await fetch(`http://localhost:8081/api/recipes/${id}`, {
+      await fetch(`${API_BASE_URL}/api/recipes/${id}`, {
         method: "DELETE",
       });
       alert("Διαγράφηκε επιτυχώς!");

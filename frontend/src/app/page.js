@@ -2,27 +2,38 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import API_BASE_URL from "@/config/api";
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // 1. Λήψη δεδομένων
+
   useEffect(() => {
-    fetch("http://localhost:8081/api/recipes")
-      .then((res) => res.json())
+    fetch(`${API_BASE_URL}/api/recipes`)
+      .then((res) => {
+        // Έλεγχος αν η απάντηση είναι ΟΚ πριν προσπαθήσουμε να διαβάσουμε JSON
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
         setRecipes(data);
-        setLoading(false);
       })
-      .catch((err) => console.error("Error fetching recipes:", err));
+      .catch((err) => {
+        console.error("Error fetching recipes:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
-
   // 2. Διαγραφή
   const handleDelete = async (id) => {
     if (confirm("Είσαι σίγουρος ότι θες να διαγράψεις αυτή τη συνταγή;")) {
       try {
-        await fetch(`http://localhost:8081/api/recipes/${id}`, {
+        await fetch(`${API_BASE_URL}/api/recipes/${id}`, {
           method: "DELETE",
         });
         setRecipes(recipes.filter((recipe) => recipe.id !== id));

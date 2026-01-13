@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import API_BASE_URL from "@/config/api";
 
 export default function EditRecipe({ params: paramsPromise }) {
   const router = useRouter();
@@ -55,10 +56,10 @@ export default function EditRecipe({ params: paramsPromise }) {
     const loadData = async () => {
       try {
         const [catRes, unitRes, diffRes, recipeRes] = await Promise.all([
-          fetch("http://localhost:8081/api/references/categories"),
-          fetch("http://localhost:8081/api/references/units"),
-          fetch("http://localhost:8081/api/references/difficulties"),
-          fetch(`http://localhost:8081/api/recipes/${id}`),
+          fetch(`${API_BASE_URL}/api/references/categories`),
+          fetch(`${API_BASE_URL}/api/references/units`),
+          fetch(`${API_BASE_URL}/api/references/difficulties`),
+          fetch(`${API_BASE_URL}/api/recipes/${id}`),
         ]);
 
         const catData = await catRes.json();
@@ -164,7 +165,7 @@ export default function EditRecipe({ params: paramsPromise }) {
     };
 
     try {
-      const res = await fetch(`http://localhost:8081/api/recipes/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/recipes/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
