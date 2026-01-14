@@ -2,208 +2,212 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import API_BASE_URL from "@/config/api";
 
 export default function RecipeDetails({ params: paramsPromise }) {
-  const [id, setId] = useState(null);
+  const params = use(paramsPromise);
+  const { id } = params;
 
-  useEffect(() => {
-    if (paramsPromise instanceof Promise) {
-      paramsPromise.then((p) => setId(p.id));
-    } else {
-      setId(paramsPromise.id);
-    }
-  }, [paramsPromise]);
-
-  const router = useRouter();
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!id) return;
 
-    const fetchRecipe = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/recipes/${id}`);
-        if (!res.ok) throw new Error("Recipe not found");
-        const data = await res.json();
+    fetch(`${API_BASE_URL}/api/recipes/${id}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
         setRecipe(data);
-      } catch (err) {
-        alert("Η συνταγή δεν βρέθηκε!");
-        router.push("/");
-      } finally {
         setLoading(false);
-      }
-    };
-
-    fetchRecipe();
-  }, [id, router]);
-
-  const handleDelete = async () => {
-    if (!confirm("Είσαι σίγουρος ότι θες να διαγράψεις τη συνταγή;")) return;
-
-    try {
-      await fetch(`${API_BASE_URL}/api/recipes/${id}`, {
-        method: "DELETE",
+      })
+      .catch((err) => {
+        console.error("Error fetching recipe details:", err);
+        setError(err.message);
+        setLoading(false);
       });
-      alert("Διαγράφηκε επιτυχώς!");
-      router.push("/");
-    } catch (err) {
-      alert("Σφάλμα κατά τη διαγραφή");
+  }, [id]);
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600 animate-pulse">
+          Φόρτωση συνταγής...
+        </div>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-red-600">Σφάλμα: {error}</div>
+      </div>
+    );
+
+  if (!recipe) return null;
+
+  // Βοηθητική συνάρτηση για μορφοποίηση χρόνου
+  const formatTime = (minutes) => {
+    if (!minutes) return "0 λεπτά";
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hrs > 0) {
+      return `${hrs}ώ ${mins > 0 ? `${mins}λ` : ""}`;
     }
+    return `${mins} λεπτά`;
   };
 
-  if (loading || !recipe)
-    return <div className="p-10 text-center">Φόρτωση...</div>;
-
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden">
-        {/* Header με Κεντρική Φωτογραφία */}
-        <div className="relative h-64 bg-gray-200">
-          {recipe.photoUrls && recipe.photoUrls.length > 0 ? (
-            <img
-              src={recipe.photoUrls[0]}
-              alt={recipe.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400 text-4xl">
-              🍳
-            </div>
-          )}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6">
-            <h1 className="text-4xl font-bold text-white">{recipe.name}</h1>
-            <div className="text-white opacity-90 mt-2 flex gap-4">
-              <span className="bg-blue-600 px-2 py-1 rounded text-sm">
-                {recipe.category}
-              </span>
-              <span className="bg-orange-500 px-2 py-1 rounded text-sm">
-                {recipe.difficulty}
-              </span>
-              <span className="bg-green-600 px-2 py-1 rounded text-sm">
-                ⏱️ {recipe.totalTime}'
-              </span>
-            </div>
+    <div className="min-h-screen bg-gray-50 pb-12">
+      {/* Hero Section με Κεντρική Εικόνα */}
+      <div className="relative h-96 bg-gray-300">
+        {recipe.photoUrls && recipe.photoUrls.length > 0 ? (
+          <img
+            src={recipe.photoUrls[0]}
+            alt={recipe.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-6xl">
+            🥘
+          </div>
+        )}
+        {/* Overlay Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+
+        {/* Τίτλος και Κατηγορία πάνω στην εικόνα */}
+        <div className="absolute bottom-0 left-0 p-8 text-white">
+          <span className="bg-green-600 text-xs px-3 py-1 rounded-full uppercase tracking-wider font-semibold">
+            {recipe.category}
+          </span>
+          <h1 className="text-4xl font-bold mt-3 mb-2">{recipe.name}</h1>
+          <div className="flex items-center space-x-4 text-sm font-medium">
+            <span className="flex items-center">
+              ⏱️ Συνολικός Χρόνος: {formatTime(recipe.totalTime)}
+            </span>
+            <span className="flex items-center">
+              📊 Δυσκολία: {recipe.difficulty || "Μη ορισμένη"}
+            </span>
           </div>
         </div>
+      </div>
 
-        {/* Action Buttons */}
-        <div className="p-4 bg-gray-100 flex gap-3 border-b">
-          <Link
-            href="/"
-            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-          >
-            ← Πίσω
-          </Link>
-          <Link
-            href={`/edit/${recipe.id}`}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            ✏️ Επεξεργασία
-          </Link>
-          <button
-            onClick={handleDelete}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            🗑️ Διαγραφή
-          </button>
-          <Link
-            href={`/run/${recipe.id}`}
-            className="ml-auto px-6 py-2 bg-purple-600 text-white font-bold rounded shadow hover:bg-purple-700"
-          >
-            ▶️ ΕΚΤΕΛΕΣΗ
-          </Link>
-        </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Αριστερή Στήλη: Υλικά και Actions */}
+          <div className="lg:col-span-1 space-y-8">
+            {/* Κουμπιά Ενεργειών */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+              <Link href={`/run/${recipe.id}`} className="w-full">
+                <button className="w-full bg-green-600 text-white text-lg font-bold py-3 px-6 rounded-xl hover:bg-green-700 transition transform hover:scale-[1.02] shadow-md flex items-center justify-center">
+                  ▶️ Ξεκίνα την εκτέλεση
+                </button>
+              </Link>
+              <div className="flex gap-3">
+                <Link href={`/edit/${recipe.id}`} className="flex-1">
+                  <button className="w-full bg-blue-100 text-blue-700 font-semibold py-2 px-4 rounded-lg hover:bg-blue-200 transition flex items-center justify-center">
+                    ✏️ Επεξεργασία
+                  </button>
+                </Link>
+                <Link href="/" className="flex-1">
+                  <button className="w-full bg-gray-100 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition flex items-center justify-center">
+                    🏠 Αρχική
+                  </button>
+                </Link>
+              </div>
+            </div>
 
-        <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-1 bg-yellow-50 p-6 rounded-lg border border-yellow-100 h-fit">
-            <h2 className="text-xl font-bold mb-4 text-yellow-800">
-              🛒 Υλικά Συνταγής
-            </h2>
-            <ul className="space-y-2">
-              {recipe.ingredients.map((ing, i) => (
-                <li
-                  key={i}
-                  className="flex justify-between border-b border-yellow-200 pb-1 last:border-0"
-                >
-                  <span>{ing.name}</span>
-                  <span className="font-bold">
-                    {ing.quantity}
-                    {ing.unit}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="md:col-span-2 space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">👣 Εκτέλεση</h2>
-
-            {recipe.steps.map((step, i) => (
-              <div
-                key={i}
-                className="border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition"
-              >
-                <div className="flex bg-gray-50 border-b p-3 items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold">
-                      {i + 1}
+            {/* Λίστα Υλικών */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                🛒 Υλικά
+              </h2>
+              <ul className="space-y-3">
+                {recipe.ingredients.map((ing, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100"
+                  >
+                    <span className="font-medium text-gray-700">
+                      {ing.name}
                     </span>
-                    <h3 className="font-bold text-lg">{step.title}</h3>
-                  </div>
-                  <span className="text-sm bg-gray-200 px-2 py-1 rounded">
-                    ⏱️ {step.duration}'
-                  </span>
-                </div>
+                    <span className="font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full">
+                      {ing.quantity} {ing.unit.toLowerCase()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
 
-                <div className="p-4">
-                  <p className="text-gray-700 mb-4 whitespace-pre-wrap">
-                    {step.description}
-                  </p>
-                  {step.photoUrls && step.photoUrls.length > 0 && (
-                    <div className="mb-4 mt-2">
-                      <img
-                        // Παίρνουμε το url είτε από το photos[0].url είτε απευθείας (για συμβατότητα)
-                        src={step.photoUrls[0].url || step.photoUrls[0]}
-                        alt={`Step ${i + 1}`}
-                        className="rounded-lg max-h-64 object-cover border border-gray-200 shadow-sm"
-                      />
+          {/* Δεξιά Στήλη: Βήματα Εκτέλεσης */}
+          <div className="lg:col-span-2">
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+              <h2 className="text-2xl font-bold text-gray-800 mb-8 flex items-center">
+                👨‍🍳 Εκτέλεση
+              </h2>
+              <div className="space-y-8">
+                {recipe.steps.map((step, index) => (
+                  // ---  Προσθήκη border-b για διαχωρισμό ---
+                  <div
+                    key={index}
+                    className="flex items-start border-b border-gray-100 pb-6 last:border-0 last:pb-0"
+                  >
+                    {/* Αριθμός Βήματος */}
+                    <div className="flex-shrink-0 bg-green-100 text-green-800 font-bold rounded-full w-10 h-10 flex items-center justify-center mr-5 shadow-sm">
+                      {index + 1}
                     </div>
-                  )}
-                  {/* Φωτογραφία Βήματος */}
-                  {step.photoUrls && step.photoUrls.length > 0 && (
-                    <div className="mb-4">
-                      <img
-                        src={step.photoUrls[0]}
-                        alt={`Step ${i + 1}`}
-                        className="rounded-lg max-h-64 object-cover border"
-                      />
-                    </div>
-                  )}
 
-                  {step.ingredients && step.ingredients.length > 0 && (
-                    <div className="bg-blue-50 p-3 rounded text-sm">
-                      <span className="font-bold text-blue-800 block mb-1">
-                        Για αυτό το βήμα χρειάζεσαι:
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {step.ingredients.map((ing, k) => (
-                          <span
-                            key={k}
-                            className="bg-white border border-blue-200 px-2 py-1 rounded text-blue-600"
-                          >
-                            {ing.name} ({ing.quantity}
-                            {ing.unit})
+                    {/* Περιεχόμενο Βήματος (Κείμενο) - flex-grow για να πιάσει χώρο */}
+                    <div className="flex-grow mr-4">
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">
+                        {step.title}
+                      </h3>
+                      <p className="text-gray-600 leading-relaxed mb-4">
+                        {step.description}
+                      </p>
+                      {/* Metadata βήματος (Χρόνος & Υλικά) */}
+                      <div className="flex flex-wrap gap-3">
+                        {step.duration > 0 && (
+                          <span className="inline-flex items-center bg-amber-50 text-amber-700 text-sm px-3 py-1 rounded-full font-medium">
+                            ⏱️ {formatTime(step.duration)}
                           </span>
-                        ))}
+                        )}
+                        {step.ingredients && step.ingredients.length > 0 && (
+                          <span
+                            className="inline-flex items-center bg-blue-50 text-blue-700 text-sm px-3 py-1 rounded-full font-medium"
+                            title={step.ingredients
+                              .map((i) => i.name)
+                              .join(", ")}
+                          >
+                            🥣 {step.ingredients.length} υλικά
+                          </span>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
+
+                    {/* ---  Μικρογραφία Εικόνας Βήματος (μόνο η πρώτη) --- */}
+                    {step.photoUrls &&
+                      step.photoUrls.length > 0 &&
+                      step.photoUrls[0] && (
+                        <div className="flex-shrink-0">
+                          <img
+                            src={step.photoUrls[0]}
+                            alt={`Βήμα ${index + 1}`}
+                            className="w-28 h-28 object-cover rounded-xl border border-gray-200 shadow-sm"
+                          />
+                        </div>
+                      )}
+                    {/* ------------------------------------------------------------- */}
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>

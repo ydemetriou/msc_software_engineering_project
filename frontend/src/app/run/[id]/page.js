@@ -129,12 +129,25 @@ export default function RunRecipe({ params: paramsPromise }) {
 
         {/* Φωτογραφία Βήματος */}
         {currentStep.photoUrls && currentStep.photoUrls.length > 0 && (
-          <div className="mb-6 rounded-xl overflow-hidden shadow-2xl border border-gray-700 bg-black flex justify-center">
-            <img
-              src={currentStep.photoUrls[0].url || currentStep.photoUrls[0]}
-              alt="Step Visualization"
-              className="max-h-80 object-contain"
-            />
+          <div className="mt-8 animate-fadeIn">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              📸 Φωτογραφίες Βήματος
+            </h3>
+            {/* Πλέγμα για εμφάνιση πολλαπλών εικόνων */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {currentStep.photoUrls.map((url, index) => (
+                <div
+                  key={index}
+                  className="relative h-64 rounded-2xl overflow-hidden shadow-md border border-gray-100 group"
+                >
+                  <img
+                    src={url}
+                    alt={`Φωτογραφία βήματος ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

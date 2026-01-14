@@ -20,7 +20,7 @@ export default function CreateRecipe() {
     category: "",
     difficulty: "",
     totalTime: 0,
-    mainPhotoUrl: "", // Εδώ θα μπει το Base64 string της εικόνας
+    mainPhotoUrl: "", // Κεντρική (μία)
     ingredients: [],
     steps: [],
   });
@@ -36,33 +36,43 @@ export default function CreateRecipe() {
     title: "",
     description: "",
     duration: "",
-    photoUrl: "", // Εδώ θα μπει το Base64 string της εικόνας βήματος
+    photoUrls: [], // Πίνακας για πολλαπλές φωτό
     selectedIngredients: [],
   });
 
-  // --- Συνάρτηση μετατροπής αρχείου σε Base64 ---
+  // --- Συνάρτηση μετατροπής αρχείων σε Base64 (Multiple) ---
   const handleFileUpload = (e, targetField, isStep = false) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    // Έλεγχος μεγέθους (π.χ. όριο 2MB για να μην "σκάσει" η βάση)
-    if (file.size > 2 * 1024 * 1024) {
-      alert(
-        "Το αρχείο είναι πολύ μεγάλο! Παρακαλώ επιλέξτε εικόνα μικρότερη από 2MB."
-      );
-      return;
+    // Έλεγχος μεγέθους για κάθε αρχείο
+    for (let file of files) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert(`Το αρχείο ${file.name} είναι πολύ μεγάλο! (>2MB)`);
+        return;
+      }
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result;
+    const readers = files.map((file) => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(readers).then((base64Array) => {
       if (isStep) {
-        setTempStep((prev) => ({ ...prev, [targetField]: base64String }));
+        setTempStep((prev) => ({
+          ...prev,
+          // Προσθήκη των νέων στις υπάρχουσες
+          [targetField]: [...(prev[targetField] || []), ...base64Array],
+        }));
       } else {
-        setRecipe((prev) => ({ ...prev, [targetField]: base64String }));
+        // Για την κεντρική κρατάμε μόνο την πρώτη (όπως πριν)
+        setRecipe((prev) => ({ ...prev, [targetField]: base64Array[0] }));
       }
-    };
-    reader.readAsDataURL(file); // Μετατροπή σε μορφή κατάλληλη για <img> src
+    });
   };
 
   // 1. Fetch Lists & Initial Setup
@@ -141,7 +151,7 @@ export default function CreateRecipe() {
           title: step.title,
           description: step.description,
           duration: parseInt(step.duration),
-          photoUrls: step.photoUrl ? [step.photoUrl] : [],
+          photoUrls: step.photoUrls || [], // Στέλνουμε τον πίνακα
           ingredients: stepIngredientsObjects,
         };
       }),
@@ -201,7 +211,7 @@ export default function CreateRecipe() {
       title: "",
       description: "",
       duration: "",
-      photoUrl: "",
+      photoUrls: [], // Reset array
       selectedIngredients: [],
     });
   };
@@ -436,26 +446,51 @@ export default function CreateRecipe() {
                 }
               />
 
-              {/* --- File Input για Φωτογραφία Βήματος --- */}
+              {/* --- File Input για Φωτογραφίες Βήματος (Multiple) --- */}
               <div className="mb-3">
                 <label className="block text-sm font-bold text-gray-600 mb-1">
-                  Φωτογραφία Βήματος
+                  Φωτογραφίες Βήματος (Πολλαπλές)
                 </label>
                 <input
                   type="file"
+                  multiple // Επιτρέπει πολλαπλή επιλογή
                   accept="image/*"
                   className="w-full border p-2 rounded bg-white"
-                  onChange={(e) => handleFileUpload(e, "photoUrl", true)}
+                  // Στέλνουμε "photoUrls" ως targetField
+                  onChange={(e) => handleFileUpload(e, "photoUrls", true)}
                 />
-                {tempStep.photoUrl && (
-                  <div className="mt-2 w-16 h-16 border rounded overflow-hidden">
-                    <img
-                      src={tempStep.photoUrl}
-                      alt="Step Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+
+                {/* Προεπισκόπηση Πολλαπλών Εικόνων */}
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {tempStep.photoUrls &&
+                    tempStep.photoUrls.map((url, idx) => (
+                      <div
+                        key={idx}
+                        className="relative w-16 h-16 border rounded overflow-hidden group"
+                      >
+                        <img
+                          src={url}
+                          alt={`Step Preview ${idx}`}
+                          className="w-full h-full object-cover"
+                        />
+                        {/* Κουμπάκι για αφαίρεση συγκεκριμένης εικόνας */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTempStep((prev) => ({
+                              ...prev,
+                              photoUrls: prev.photoUrls.filter(
+                                (_, i) => i !== idx
+                              ),
+                            }));
+                          }}
+                          className="absolute top-0 right-0 bg-red-600 text-white text-xs w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                </div>
               </div>
               {/* ------------------------------------------------ */}
 
@@ -501,10 +536,10 @@ export default function CreateRecipe() {
                     {step.stepOrder}
                   </div>
 
-                  {step.photoUrl && (
+                  {step.photoUrls && step.photoUrls.length > 0 && (
                     <div className="w-24 h-24 flex-shrink-0 bg-gray-200">
                       <img
-                        src={step.photoUrl}
+                        src={step.photoUrls[0]} // Δείχνουμε την πρώτη στη λίστα
                         alt="Step"
                         className="w-full h-full object-cover"
                       />

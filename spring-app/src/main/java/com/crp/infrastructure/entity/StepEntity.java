@@ -86,8 +86,16 @@ public class StepEntity {
         return photos;
     }
 
+    // public void setPhotos(List<PhotoEntity> photos) {
+    //     this.photos = photos;
+    // }
     public void setPhotos(List<PhotoEntity> photos) {
         this.photos = photos;
+        if (photos != null) {
+            for (PhotoEntity photo : photos) {
+                photo.setStep(this);
+            }
+        }
     }
 
     public List<IngredientEntity> getIngredients() {
