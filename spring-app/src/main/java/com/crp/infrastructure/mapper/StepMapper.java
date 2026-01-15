@@ -3,6 +3,7 @@ package com.crp.infrastructure.mapper;
 import com.crp.domain.model.Ingredient;
 import com.crp.domain.model.Step;
 import com.crp.infrastructure.entity.IngredientEntity;
+import com.crp.infrastructure.entity.PhotoEntity;
 import com.crp.infrastructure.entity.StepEntity;
 
 import java.util.ArrayList;
@@ -20,6 +21,12 @@ public class StepMapper {
             entity = new StepEntity(step.getTitle(), step.getDescription(), step.getDuration());
         }
         // Do not map domain order; persistence order is managed by RecipeEntity @OrderColumn
+        if (step.getPhotos() != null) {
+            List<PhotoEntity> photoEntities = step.getPhotos().stream()
+                    .map(PhotoMapper::toEntity)
+                    .collect(Collectors.toList());
+            entity.setPhotos(photoEntities);
+        }
         if (step.getIngredients() != null) {
             List<IngredientEntity> ies = step.getIngredients().stream()
                     .map(IngredientMapper::toEntity)
@@ -40,6 +47,13 @@ public class StepMapper {
         Step step = new Step(entity.getTitle(), entity.getDescription(), entity.getDuration());
         step.setId(entity.getId());
         // Do not set order on domain; ordering is by list position in Recipe.steps
+        if (entity.getPhotos() != null) {
+            step.setPhotos(entity.getPhotos().stream()
+                    .map(PhotoMapper::toDomain)
+                    .collect(Collectors.toList()));
+        } else {
+            step.setPhotos(new ArrayList<>());
+        }
         if (entity.getIngredients() != null) {
             List<Ingredient> ings = entity.getIngredients().stream()
                     .map(IngredientMapper::toDomain)

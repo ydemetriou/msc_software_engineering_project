@@ -1,0 +1,29 @@
+# Χρησιμοποιούμε μια ελαφριά έκδοση του Node.js
+FROM node:20-alpine
+
+# Ορίζουμε τον φάκελο εργασίας μέσα στο container
+WORKDIR /app
+
+# Accept build-time args for env vars (optional)
+ARG NEXT_PUBLIC_API_URL
+
+# Make them available as environment variables during build and runtime
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+# Αντιγράφουμε τα αρχεία ρυθμίσεων (package.json)
+COPY package*.json ./
+
+# Εγκαθιστούμε τα απαραίτητα πακέτα
+RUN npm install
+
+# Αντιγράφουμε όλο τον υπόλοιπο κώδικα του frontend
+COPY . .
+
+# Χτίζουμε την εφαρμογή για να είναι έτοιμη για παραγωγή
+RUN npm run build
+
+# Η εφαρμογή θα τρέχει στην πόρτα 3000
+EXPOSE 3000
+
+# Η εντολή για να ξεκινήσει
+CMD ["npm", "start"]

@@ -20,8 +20,8 @@ set PROJECT_ROOT=%~dp0
 set ENV_FILE=%PROJECT_ROOT%.env
 
 REM Defaults (σύμφωνα με το documentation)
-set DEFAULT_SPRING_PORT=8081
-set DEFAULT_MYSQL_PORT=3306
+SET DEFAULT_FRONTEND_PORT=3000
+set DEFAULT_SPRING_PORT=8080
 set DEFAULT_PHPMYADMIN_PORT=8082
 
 REM Check Docker availability first
@@ -72,6 +72,19 @@ echo Configure ports for the stack:
 echo (Press ENTER to use default values)
 echo.
 
+REM Frontend Port
+:ask_frontend
+set FRONTEND_INPUT=
+set /p FRONTEND_INPUT="  Frontend (Next.js) host port [default: %DEFAULT_FRONTEND_PORT%]: "
+if "!FRONTEND_INPUT!"=="" (
+    set FRONTEND_PORT=%DEFAULT_FRONTEND_PORT%
+) else (
+    call :validate_port "!FRONTEND_INPUT!" FRONTEND_PORT
+    if "!FRONTEND_PORT!"=="" goto ask_frontend
+)
+echo     → Using frontend port: !FRONTEND_PORT!
+echo.
+
 REM Spring Boot Port
 :ask_spring
 set SPRING_INPUT=
@@ -82,39 +95,18 @@ if "!SPRING_INPUT!"=="" (
     call :validate_port "!SPRING_INPUT!" SPRING_PORT
     if "!SPRING_PORT!"=="" goto ask_spring
 )
-echo     → Using port: !SPRING_PORT!
+echo     → Using Spring Boot port: !SPRING_PORT!
 echo.
 
-REM MySQL Port
-:ask_mysql
-set MYSQL_INPUT=
-set /p MYSQL_INPUT="  MySQL host port [default: %DEFAULT_MYSQL_PORT%]: "
-if "!MYSQL_INPUT!"=="" (
-    set MYSQL_PORT=%DEFAULT_MYSQL_PORT%
-) else (
-    call :validate_port "!MYSQL_INPUT!" MYSQL_PORT
-    if "!MYSQL_PORT!"=="" goto ask_mysql
-)
-echo     → Using port: !MYSQL_PORT!
-echo.
-
-REM phpMyAdmin Port
-:ask_phpmyadmin
-set PHPMYADMIN_INPUT=
-set /p PHPMYADMIN_INPUT="  phpMyAdmin host port [default: %DEFAULT_PHPMYADMIN_PORT%]: "
-if "!PHPMYADMIN_INPUT!"=="" (
-    set PHPMYADMIN_PORT=%DEFAULT_PHPMYADMIN_PORT%
-) else (
-    call :validate_port "!PHPMYADMIN_INPUT!" PHPMYADMIN_PORT
-    if "!PHPMYADMIN_PORT!"=="" goto ask_phpmyadmin
-)
-echo     → Using port: !PHPMYADMIN_PORT!
+REM phpMyAdmin Port - Use default without prompting
+set PHPMYADMIN_PORT=%DEFAULT_PHPMYADMIN_PORT%
+echo     → Using phpMyAdmin port: !PHPMYADMIN_PORT!
 echo.
 
 REM Check for port conflicts
 echo Checking for port conflicts...
+call :check_port_in_use !FRONTEND_PORT! "Frontend"
 call :check_port_in_use !SPRING_PORT! "Spring Boot"
-call :check_port_in_use !MYSQL_PORT! "MySQL"
 call :check_port_in_use !PHPMYADMIN_PORT! "phpMyAdmin"
 echo.
 
@@ -129,8 +121,8 @@ REM Show summary
 echo ========================================
 echo Configuration Summary:
 echo ========================================
+echo  Frontend:     http://localhost:!FRONTEND_PORT!
 echo  Spring Boot:  http://localhost:!SPRING_PORT!
-echo  MySQL:        localhost:!MYSQL_PORT!
 echo  phpMyAdmin:   http://localhost:!PHPMYADMIN_PORT!
 echo  Database:     !MYSQL_DATABASE!
 echo  DB User:      !SPRING_DATASOURCE_USERNAME!
@@ -153,7 +145,6 @@ echo Creating .env file...
     echo # MySQL
     echo MYSQL_ROOT_PASSWORD=!MYSQL_ROOT_PASSWORD!
     echo MYSQL_DATABASE=!MYSQL_DATABASE!
-    echo MYSQL_PORT=!MYSQL_PORT!
     echo.
     echo # Spring Boot datasource
     echo SPRING_DATASOURCE_URL=!SPRING_DATASOURCE_URL!
@@ -161,6 +152,7 @@ echo Creating .env file...
     echo SPRING_DATASOURCE_PASSWORD=!SPRING_DATASOURCE_PASSWORD!
     echo.
     echo # Ports
+    echo FRONTEND_PORT=!FRONTEND_PORT!
     echo SPRING_SERVER_PORT=!SPRING_PORT!
     echo PHPMYADMIN_PORT=!PHPMYADMIN_PORT!
 ) > "%ENV_FILE%"
@@ -292,3 +284,4 @@ if %ERRORLEVEL%==0 (
     echo      You may need to choose a different port or stop the conflicting service.
 )
 goto :eof
+
