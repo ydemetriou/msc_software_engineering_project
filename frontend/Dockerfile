@@ -4,6 +4,12 @@ FROM node:20-alpine
 # Ορίζουμε τον φάκελο εργασίας μέσα στο container
 WORKDIR /app
 
+# Accept build-time args for env vars (optional)
+ARG NEXT_PUBLIC_API_URL
+
+# Make them available as environment variables during build and runtime
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Αντιγράφουμε τα αρχεία ρυθμίσεων (package.json)
 COPY package*.json ./
 
