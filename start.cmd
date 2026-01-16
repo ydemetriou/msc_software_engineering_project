@@ -20,8 +20,8 @@ set PROJECT_ROOT=%~dp0
 set ENV_FILE=%PROJECT_ROOT%.env
 
 REM Defaults (σύμφωνα με το documentation)
-SET DEFAULT_FRONTEND_PORT=3000
-set DEFAULT_SPRING_PORT=8080
+set DEFAULT_FRONTEND_PORT=3000
+set DEFAULT_SPRING_PORT=8081
 set DEFAULT_PHPMYADMIN_PORT=8082
 
 REM Check Docker availability first
@@ -98,8 +98,16 @@ if "!SPRING_INPUT!"=="" (
 echo     → Using Spring Boot port: !SPRING_PORT!
 echo.
 
-REM phpMyAdmin Port - Use default without prompting
-set PHPMYADMIN_PORT=%DEFAULT_PHPMYADMIN_PORT%
+REM phpMyAdmin Port - NOW PROMPTS USER
+:ask_phpmyadmin
+set PHPMYADMIN_INPUT=
+set /p PHPMYADMIN_INPUT="  phpMyAdmin host port [default: %DEFAULT_PHPMYADMIN_PORT%]: "
+if "!PHPMYADMIN_INPUT!"=="" (
+    set PHPMYADMIN_PORT=%DEFAULT_PHPMYADMIN_PORT%
+) else (
+    call :validate_port "!PHPMYADMIN_INPUT!" PHPMYADMIN_PORT
+    if "!PHPMYADMIN_PORT!"=="" goto ask_phpmyadmin
+)
 echo     → Using phpMyAdmin port: !PHPMYADMIN_PORT!
 echo.
 
@@ -113,9 +121,11 @@ echo.
 REM Fixed DB config
 set MYSQL_ROOT_PASSWORD=root
 set MYSQL_DATABASE=mydb
+set MYSQL_PORT=3306
 set SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/!MYSQL_DATABASE!
 set SPRING_DATASOURCE_USERNAME=root
 set SPRING_DATASOURCE_PASSWORD=!MYSQL_ROOT_PASSWORD!
+set NEXT_PUBLIC_API_URL=http://localhost
 
 REM Show summary
 echo ========================================
@@ -124,8 +134,9 @@ echo ========================================
 echo  Frontend:     http://localhost:!FRONTEND_PORT!
 echo  Spring Boot:  http://localhost:!SPRING_PORT!
 echo  phpMyAdmin:   http://localhost:!PHPMYADMIN_PORT!
-echo  Database:     !MYSQL_DATABASE!
+echo  Database:     !MYSQL_DATABASE! (port: !MYSQL_PORT!)
 echo  DB User:      !SPRING_DATASOURCE_USERNAME!
+echo  API URL:      !NEXT_PUBLIC_API_URL!
 echo ========================================
 echo.
 set /p CONFIRM="Continue with this configuration? (Y/N): "
@@ -145,6 +156,7 @@ echo Creating .env file...
     echo # MySQL
     echo MYSQL_ROOT_PASSWORD=!MYSQL_ROOT_PASSWORD!
     echo MYSQL_DATABASE=!MYSQL_DATABASE!
+    echo MYSQL_PORT=!MYSQL_PORT!
     echo.
     echo # Spring Boot datasource
     echo SPRING_DATASOURCE_URL=!SPRING_DATASOURCE_URL!
@@ -155,6 +167,9 @@ echo Creating .env file...
     echo FRONTEND_PORT=!FRONTEND_PORT!
     echo SPRING_SERVER_PORT=!SPRING_PORT!
     echo PHPMYADMIN_PORT=!PHPMYADMIN_PORT!
+    echo.
+    echo # Frontend API Configuration
+    echo NEXT_PUBLIC_API_URL=!NEXT_PUBLIC_API_URL!
 ) > "%ENV_FILE%"
 
 if exist "%ENV_FILE%" (
@@ -284,4 +299,3 @@ if %ERRORLEVEL%==0 (
     echo      You may need to choose a different port or stop the conflicting service.
 )
 goto :eof
-
