@@ -113,7 +113,7 @@ export default function CreateRecipe() {
   useEffect(() => {
     const total = recipe.steps.reduce(
       (sum, step) => sum + parseInt(step.duration || 0),
-      0
+      0,
     );
     setRecipe((prev) => ({ ...prev, totalTime: total }));
   }, [recipe.steps]);
@@ -232,6 +232,15 @@ export default function CreateRecipe() {
         : [...prev.selectedIngredients, name];
       return { ...prev, selectedIngredients: list };
     });
+  };
+
+  const validatePositive = (value, setter, fieldName) => {
+    const num = parseFloat(value);
+    // Αν δεν είναι αριθμός ή είναι <= 0
+    if (value !== "" && (isNaN(num) || num <= 0)) {
+      alert("Παρακαλώ εισάγετε έναν θετικό αριθμό.");
+      setter((prev) => ({ ...prev, [fieldName]: "" })); // Αδειάζει το πεδίο
+    }
   };
 
   if (loadingLists) return <div className="p-10">Φόρτωση...</div>;
@@ -355,6 +364,7 @@ export default function CreateRecipe() {
                 type="number"
                 placeholder="Ποσότητα"
                 className="border p-2 rounded w-24"
+                step="any"
                 value={tempIngredient.quantity}
                 onChange={(e) =>
                   setTempIngredient({
@@ -362,6 +372,14 @@ export default function CreateRecipe() {
                     quantity: e.target.value,
                   })
                 }
+                onBlur={(e) =>
+                  validatePositive(
+                    e.target.value,
+                    setTempIngredient,
+                    "quantity",
+                  )
+                }
+                title="Η ποσότητα πρέπει να είναι θετικός αριθμός"
               />
               <select
                 className="border p-2 rounded w-32"
@@ -430,10 +448,15 @@ export default function CreateRecipe() {
                     type="number"
                     placeholder="Λεπτά"
                     className="w-full border p-2 rounded"
+                    step="any"
                     value={tempStep.duration}
                     onChange={(e) =>
                       setTempStep({ ...tempStep, duration: e.target.value })
                     }
+                    onBlur={(e) =>
+                      validatePositive(e.target.value, setTempStep, "duration")
+                    }
+                    title="Η διάρκεια πρέπει να είναι θετικός αριθμός"
                   />
                 </div>
               </div>
@@ -480,7 +503,7 @@ export default function CreateRecipe() {
                             setTempStep((prev) => ({
                               ...prev,
                               photoUrls: prev.photoUrls.filter(
-                                (_, i) => i !== idx
+                                (_, i) => i !== idx,
                               ),
                             }));
                           }}
@@ -507,7 +530,7 @@ export default function CreateRecipe() {
                       <input
                         type="checkbox"
                         checked={tempStep.selectedIngredients.includes(
-                          ing.name
+                          ing.name,
                         )}
                         onChange={() => toggleStepIngredient(ing.name)}
                       />
