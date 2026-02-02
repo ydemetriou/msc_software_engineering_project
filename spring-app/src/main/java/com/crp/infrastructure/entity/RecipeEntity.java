@@ -31,7 +31,6 @@ public class RecipeEntity {
     private List<IngredientEntity> ingredients;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
-
     @OrderColumn(name = "step_order")
     private List<StepEntity> steps;
 

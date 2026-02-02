@@ -31,6 +31,13 @@ public class StepEntity {
     @JoinColumn(name = "recipe_id", nullable = false)
     private RecipeEntity recipe;
 
+    /**
+     * Used for ordering steps inside a recipe.
+     * Persisted in DB column `step_order` (added via Flyway migration).
+     */
+    @Column(name = "step_order")
+    private Integer stepOrder;
+
     public StepEntity() {
     }
 
@@ -112,6 +119,14 @@ public class StepEntity {
 
     public void setRecipe(RecipeEntity recipe) {
         this.recipe = recipe;
+    }
+
+    public Integer getStepOrder() {
+        return stepOrder;
+    }
+
+    public void setStepOrder(Integer stepOrder) {
+        this.stepOrder = stepOrder;
     }
 
     public void addIngredient(IngredientEntity ingredient) {
